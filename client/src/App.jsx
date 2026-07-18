@@ -41,6 +41,9 @@ import StudentQuizzes from './pages/assessment/StudentQuizzes';
 import TakeQuiz from './pages/assessment/TakeQuiz';
 import GlobalAssignmentsPage from './pages/assessment/GlobalAssignmentsPage';
 
+// Module 6 AI Tutor Page
+import AITutorPage from './pages/ai/AITutorPage';
+
 // Hook
 import { useAuth } from './hooks/useAuth';
 
@@ -387,6 +390,16 @@ const AppContent = () => {
                 <RoleGuard allowedRoles={['Student']}>
                   <TakeQuiz />
                 </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Module 6 AI Tutor Route */}
+          <Route
+            path="/ai-tutor"
+            element={
+              <ProtectedRoute>
+                <AITutorPage />
               </ProtectedRoute>
             }
           />

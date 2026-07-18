@@ -27,6 +27,14 @@ const uploadMaterial = async (lessonId, fileInfo, user) => {
   };
 
   const material = await LearningMaterial.create(materialData);
+
+  // Trigger background AI knowledge base indexing for PDFs and text documents
+  if (['pdf', 'document'].includes((material.fileType || '').toLowerCase())) {
+    const documentProcessor = require('./rag/documentProcessor.service');
+    documentProcessor.processMaterialDocument(material._id, user._id)
+      .catch(err => console.error(`[Background AI Indexing Error for ${material.fileName}]:`, err.message));
+  }
+
   return material;
 };
 

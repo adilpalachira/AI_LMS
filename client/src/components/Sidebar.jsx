@@ -35,7 +35,7 @@ const Sidebar = () => {
     { name: 'Assignments', icon: FileText, path: '/assignments' },
     { name: 'Exams', icon: GraduationCap, path: '#' },
     { name: 'Study Planner', icon: CalendarRange, path: '#' },
-    { name: 'AI Tutor', icon: BrainCircuit, path: '#' },
+    { name: 'AI Tutor', icon: BrainCircuit, path: '/ai-tutor' },
     { name: 'Analytics', icon: LineChart, path: '#' },
     { name: 'Calendar', icon: Calendar, path: '#' },
     { name: 'Messages', icon: MessageSquare, path: '#' },
