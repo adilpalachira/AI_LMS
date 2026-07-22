@@ -108,8 +108,19 @@ export const getQuizAttempts = async (quizId) => {
 };
 
 // ==========================================
-// QUESTIONS API SERVICES
+// QUESTIONS & QUESTION BANK API SERVICES
 // ==========================================
+
+export const getQuestionBank = async (params = {}) => {
+  const query = new URLSearchParams();
+  Object.keys(params).forEach(key => {
+    if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
+      query.append(key, params[key]);
+    }
+  });
+  const response = await api.get(`/questions?${query.toString()}`);
+  return response.data;
+};
 
 export const createQuestion = async (questionData) => {
   const response = await api.post('/questions', questionData);
@@ -123,5 +134,40 @@ export const updateQuestion = async (id, questionData) => {
 
 export const deleteQuestion = async (id) => {
   const response = await api.delete(`/questions/${id}`);
+  return response.data;
+};
+
+export const approveQuestionBankItem = async (id) => {
+  const response = await api.patch(`/questions/${id}/approve`);
+  return response.data;
+};
+
+export const archiveQuestionBankItem = async (id) => {
+  const response = await api.patch(`/questions/${id}/archive`);
+  return response.data;
+};
+
+export const addBankQuestionsToQuiz = async (quizId, questionIds) => {
+  const response = await api.post(`/quizzes/${quizId}/questions`, { questionIds });
+  return response.data;
+};
+
+// ==========================================
+// AI QUIZ GENERATOR API SERVICES
+// ==========================================
+
+export const generateAiQuestions = async (payload) => {
+  const response = await api.post('/ai/quizzes/generate', payload);
+  return response.data;
+};
+
+export const getAiGenerationHistory = async (courseId) => {
+  const url = courseId ? `/ai/quizzes/generation-history?courseId=${courseId}` : '/ai/quizzes/generation-history';
+  const response = await api.get(url);
+  return response.data;
+};
+
+export const bulkSaveQuestions = async (payload) => {
+  const response = await api.post('/ai/quizzes/bulk-save', payload);
   return response.data;
 };

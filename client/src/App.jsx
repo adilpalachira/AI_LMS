@@ -41,6 +41,12 @@ import StudentQuizzes from './pages/assessment/StudentQuizzes';
 import TakeQuiz from './pages/assessment/TakeQuiz';
 import GlobalAssignmentsPage from './pages/assessment/GlobalAssignmentsPage';
 
+// Module 7 AI Quiz Generator & Question Bank Pages
+import AIQuizGenerator from './pages/assessment/AIQuizGenerator';
+import QuestionBank from './pages/assessment/QuestionBank';
+import GenerationHistory from './pages/assessment/GenerationHistory';
+import QuizPreview from './pages/assessment/QuizPreview';
+
 // Module 6 AI Tutor Page
 import AITutorPage from './pages/ai/AITutorPage';
 
@@ -400,6 +406,48 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <AITutorPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Module 7 AI Quiz Generator & Question Bank Routes */}
+          <Route
+            path="/ai-quiz-generator"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin', 'Faculty']}>
+                  <AIQuizGenerator />
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/question-bank"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin', 'Faculty']}>
+                  <QuestionBank />
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ai-generation-history"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin', 'Faculty']}>
+                  <GenerationHistory />
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quizzes/preview/:id"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin', 'Faculty']}>
+                  <QuizPreview />
+                </RoleGuard>
               </ProtectedRoute>
             }
           />

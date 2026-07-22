@@ -9,6 +9,13 @@ const {
 const { protect } = require('../middlewares/auth.middleware');
 const { authorizeRoles } = require('../middlewares/role.middleware');
 
+router.get(
+  '/',
+  protect,
+  authorizeRoles('Admin', 'Faculty'),
+  questionController.getQuestions
+);
+
 router.post(
   '/',
   protect,
@@ -23,6 +30,22 @@ router.put(
   authorizeRoles('Admin', 'Faculty'),
   validateUpdateQuestion,
   questionController.updateQuestion
+);
+
+router.patch(
+  '/:id/approve',
+  protect,
+  authorizeRoles('Admin', 'Faculty'),
+  validateIdParam,
+  questionController.approveQuestion
+);
+
+router.patch(
+  '/:id/archive',
+  protect,
+  authorizeRoles('Admin', 'Faculty'),
+  validateIdParam,
+  questionController.archiveQuestion
 );
 
 router.delete(

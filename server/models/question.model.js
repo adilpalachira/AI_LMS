@@ -5,7 +5,7 @@ const QuestionSchema = new mongoose.Schema(
     quizId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Quiz',
-      required: [true, 'Quiz ID is required']
+      required: false
     },
     question: {
       type: String,
@@ -14,7 +14,7 @@ const QuestionSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['Multiple Choice', 'True/False', 'Short Answer', 'Essay'],
+      enum: ['Multiple Choice', 'MCQ', 'True/False', 'Short Answer', 'Essay', 'Descriptive'],
       required: [true, 'Question type is required']
     },
     options: {
@@ -39,7 +39,49 @@ const QuestionSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
-    // Future AI Prep
+    // Module 7 Smart Question Bank & AI metadata
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Course',
+      required: false
+    },
+    lessonId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Lesson',
+      required: false
+    },
+    materialId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'LearningMaterial',
+      required: false
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false
+    },
+    status: {
+      type: String,
+      enum: ['Generated', 'Draft', 'Approved', 'Archived'],
+      default: 'Approved'
+    },
+    isAiGenerated: {
+      type: Boolean,
+      default: false
+    },
+    source: {
+      type: String,
+      default: ''
+    },
+    sourcePage: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null
+    },
+    difficulty: {
+      type: String,
+      enum: ['Easy', 'Medium', 'Hard'],
+      default: 'Medium'
+    },
     aiEvaluationCriteria: {
       type: String,
       default: ''
@@ -56,5 +98,7 @@ const QuestionSchema = new mongoose.Schema(
 );
 
 QuestionSchema.index({ quizId: 1, order: 1 });
+QuestionSchema.index({ courseId: 1, status: 1 });
+QuestionSchema.index({ status: 1 });
 
 module.exports = mongoose.model('Question', QuestionSchema);

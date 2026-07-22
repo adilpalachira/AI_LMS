@@ -22,6 +22,8 @@ router.post(
   quizController.submitQuizAttempt
 );
 
+const questionController = require('../controllers/question.controller');
+
 // Faculty & Admin quiz management routes
 router.post(
   '/',
@@ -29,6 +31,14 @@ router.post(
   authorizeRoles('Admin', 'Faculty'),
   validateCreateQuiz,
   quizController.createQuiz
+);
+
+router.post(
+  '/:id/questions',
+  protect,
+  authorizeRoles('Admin', 'Faculty'),
+  validateIdParam,
+  questionController.addQuestionsToQuiz
 );
 
 router.put(

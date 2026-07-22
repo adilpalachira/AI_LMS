@@ -16,9 +16,8 @@ const validateResults = (req, res, next) => {
 
 const validateCreateQuestion = [
   body('quizId')
-    .notEmpty()
-    .withMessage('Quiz ID is required')
-    .custom(val => mongoose.Types.ObjectId.isValid(val) || Promise.reject('Invalid Quiz ID format')),
+    .optional({ nullable: true })
+    .custom(val => !val || mongoose.Types.ObjectId.isValid(val) || Promise.reject('Invalid Quiz ID format')),
 
   body('question')
     .trim()
@@ -28,7 +27,7 @@ const validateCreateQuestion = [
   body('type')
     .notEmpty()
     .withMessage('Question type is required')
-    .isIn(['Multiple Choice', 'True/False', 'Short Answer', 'Essay'])
+    .isIn(['Multiple Choice', 'MCQ', 'True/False', 'Short Answer', 'Essay', 'Descriptive'])
     .withMessage('Invalid question type'),
 
   body('correctAnswer')
