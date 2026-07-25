@@ -32,7 +32,11 @@ const GenerationHistory = () => {
   const fetchCourses = async () => {
     try {
       const res = await getCourses();
-      setCourses(res.data || res || []);
+      const rawData = res.data || res;
+      const courseList = Array.isArray(rawData)
+        ? rawData
+        : (Array.isArray(rawData?.courses) ? rawData.courses : []);
+      setCourses(courseList);
     } catch (err) {
       console.error('Failed to load courses:', err);
     }
@@ -43,7 +47,9 @@ const GenerationHistory = () => {
       setLoading(true);
       setError('');
       const res = await getAiGenerationHistory(selectedCourseId || undefined);
-      setHistoryLogs(res.data || res || []);
+      const rawData = res.data || res;
+      const historyItems = Array.isArray(rawData) ? rawData : [];
+      setHistoryLogs(historyItems);
     } catch (err) {
       setError('Failed to load generation history.');
     } finally {

@@ -67,7 +67,11 @@ const QuestionBank = () => {
   const fetchCourses = async () => {
     try {
       const res = await getCourses();
-      setCourses(res.data || res || []);
+      const rawData = res.data || res;
+      const courseList = Array.isArray(rawData)
+        ? rawData
+        : (Array.isArray(rawData?.courses) ? rawData.courses : []);
+      setCourses(courseList);
     } catch (err) {
       console.error('Failed to load courses:', err);
     }
@@ -85,9 +89,13 @@ const QuestionBank = () => {
         search: searchQuery.trim() || undefined
       };
       const res = await getQuestionBank(params);
-      const items = res.data || res || [];
+      const rawData = res.data || res;
+      const items = Array.isArray(rawData)
+        ? rawData
+        : (Array.isArray(rawData?.questions) ? rawData.questions : []);
       setQuestions(items);
     } catch (err) {
+      console.error('Failed to load Question Bank:', err);
       setError(err.response?.data?.message || 'Failed to load Question Bank.');
     } finally {
       setLoading(false);

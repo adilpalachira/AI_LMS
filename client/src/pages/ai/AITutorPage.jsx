@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import Sidebar from '../../components/Sidebar';
+import Header from '../../components/Header';
 import { getMyEnrollments, getMyTaughtCourses, getCourses } from '../../services/courseService';
 import { aiTutorService } from '../../services/aiTutorService';
 import CourseSelector from '../../components/ai/CourseSelector';
@@ -232,186 +234,198 @@ export default function AITutorPage() {
       ];
 
   return (
-    <div className="h-[calc(100vh-5rem)] flex flex-col bg-slate-100 overflow-hidden">
-      {/* Top Bar Header */}
-      <div className="bg-white border-b border-slate-200 px-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Bot className="w-6 h-6 text-blue-600" />
-            AI Tutor & Knowledge Base
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Ask questions about your enrolled course materials powered by Retrieval-Augmented Generation.
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#F8FAFC] flex font-sans">
+      {/* 260px Fixed Sidebar */}
+      <Sidebar />
 
-        <div className="flex items-center gap-4">
-          <CourseSelector
-            courses={courses}
-            selectedCourseId={selectedCourseId}
-            onSelectCourse={(id) => setSelectedCourseId(id)}
-          />
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Fixed Header */}
+        <Header />
 
-          {/* Faculty / Admin Tab Toggle */}
-          {(user?.role === 'Admin' || user?.role === 'Faculty') && (
-            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-              <button
-                onClick={() => setActiveTab('chat')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
-                  activeTab === 'chat'
-                    ? 'bg-white text-blue-700 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Bot className="w-3.5 h-3.5" />
-                <span>AI Assistant</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setActiveTab('knowledge');
-                  if (selectedCourseId) fetchKnowledgeDocs(selectedCourseId);
-                }}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
-                  activeTab === 'knowledge'
-                    ? 'bg-white text-blue-700 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Database className="w-3.5 h-3.5" />
-                <span>Knowledge Base</span>
-              </button>
+        {/* AI Tutor Workspace Container */}
+        <main className="flex-1 flex flex-col h-[calc(100vh-80px)] overflow-hidden bg-[#F8FAFC]">
+          {/* Top Bar Header */}
+          <div className="bg-white border-b border-gray-200/80 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0 shadow-sm">
+            <div>
+              <h1 className="text-xl font-extrabold text-gray-900 flex items-center gap-2 tracking-tight">
+                <Bot className="w-6 h-6 text-blue-600" />
+                AI Tutor & Knowledge Base
+              </h1>
+              <p className="text-xs text-gray-400 font-medium mt-0.5">
+                Ask questions about your enrolled course materials powered by Retrieval-Augmented Generation.
+              </p>
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* Main Content Workspace */}
-      <div className="flex-1 flex overflow-hidden">
-        {activeTab === 'chat' ? (
-          <>
-            {/* Sidebar Chat Sessions */}
-            <ChatSessionList
-              sessions={sessions}
-              activeSessionId={activeSessionId}
-              onSelectSession={handleSelectSession}
-              onNewSession={handleNewSession}
-              onDeleteSession={handleDeleteSession}
-            />
+            <div className="flex items-center gap-4">
+              <CourseSelector
+                courses={courses}
+                selectedCourseId={selectedCourseId}
+                onSelectCourse={(id) => setSelectedCourseId(id)}
+              />
 
-            {/* Chat Window */}
-            <AIChatWindow
-              messages={messages}
-              isLoading={isLoading}
-              error={error}
-              courseTitle={selectedCourse?.title}
-              onSendMessage={handleSendMessage}
-              suggestedQuestions={suggestedQuestions}
-            />
-          </>
-        ) : (
-          /* Knowledge Base Status View (Faculty / Admin) */
-          <div className="flex-1 overflow-y-auto p-6 bg-white">
-            <div className="max-w-5xl mx-auto">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Database className="w-5 h-5 text-blue-600" />
-                    Course Knowledge Base Documents
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Manage vector embeddings, view extraction statuses, and retry failed processing jobs.
-                  </p>
-                </div>
-                <button
-                  onClick={() => fetchKnowledgeDocs(selectedCourseId)}
-                  className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition-all"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Refresh Status</span>
-                </button>
-              </div>
+              {/* Faculty / Admin Tab Toggle */}
+              {(user?.role === 'Admin' || user?.role === 'Faculty') && (
+                <div className="flex bg-gray-100 p-1 rounded-xl border border-gray-200">
+                  <button
+                    onClick={() => setActiveTab('chat')}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                      activeTab === 'chat'
+                        ? 'bg-white text-blue-700 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <Bot className="w-3.5 h-3.5" />
+                    <span>AI Assistant</span>
+                  </button>
 
-              {docsLoading ? (
-                <div className="p-8 text-center text-slate-400 text-sm">
-                  Loading knowledge base records...
-                </div>
-              ) : knowledgeDocs.length === 0 ? (
-                <div className="p-12 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
-                  <FileText className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                  <h4 className="text-sm font-bold text-slate-700 mb-1">
-                    No Knowledge Base Documents Yet
-                  </h4>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto">
-                    Learning material documents (PDFs, notes) uploaded to course lessons will automatically process and appear here.
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
-                      <tr>
-                        <th className="py-3.5 px-4">Document Name</th>
-                        <th className="py-3.5 px-4">Lesson</th>
-                        <th className="py-3.5 px-4">Status</th>
-                        <th className="py-3.5 px-4">Chunks</th>
-                        <th className="py-3.5 px-4">Uploaded</th>
-                        <th className="py-3.5 px-4 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 font-normal text-slate-700">
-                      {knowledgeDocs.map((doc) => (
-                        <tr key={doc._id} className="hover:bg-slate-50 transition-colors">
-                          <td className="py-3.5 px-4 font-semibold text-slate-900 flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                            <span>{doc.fileName}</span>
-                          </td>
-                          <td className="py-3.5 px-4 text-xs text-slate-500">
-                            {doc.lessonId?.title || 'General'}
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <DocumentStatusBadge status={doc.processingStatus} />
-                            {doc.errorMessage && (
-                              <p className="text-[10px] text-rose-600 mt-1 max-w-xs truncate" title={doc.errorMessage}>
-                                {doc.errorMessage}
-                              </p>
-                            )}
-                          </td>
-                          <td className="py-3.5 px-4 text-xs font-mono font-semibold text-slate-700">
-                            {doc.chunkCount || 0}
-                          </td>
-                          <td className="py-3.5 px-4 text-xs text-slate-400">
-                            {new Date(doc.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="py-3.5 px-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              {doc.processingStatus === 'FAILED' && (
-                                <button
-                                  onClick={() => handleRetryDoc(doc._id)}
-                                  title="Retry vector processing"
-                                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                >
-                                  <RefreshCw className="w-4 h-4" />
-                                </button>
-                              )}
-                              <button
-                                onClick={() => handleDeleteDoc(doc._id)}
-                                title="Remove from knowledge base"
-                                className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <button
+                    onClick={() => {
+                      setActiveTab('knowledge');
+                      if (selectedCourseId) fetchKnowledgeDocs(selectedCourseId);
+                    }}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                      activeTab === 'knowledge'
+                        ? 'bg-white text-blue-700 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <Database className="w-3.5 h-3.5" />
+                    <span>Knowledge Base</span>
+                  </button>
                 </div>
               )}
             </div>
           </div>
-        )}
+
+          {/* Main Content Workspace */}
+          <div className="flex-1 flex overflow-hidden">
+            {activeTab === 'chat' ? (
+              <>
+                {/* Sidebar Chat Sessions */}
+                <ChatSessionList
+                  sessions={sessions}
+                  activeSessionId={activeSessionId}
+                  onSelectSession={handleSelectSession}
+                  onNewSession={handleNewSession}
+                  onDeleteSession={handleDeleteSession}
+                />
+
+                {/* Chat Window */}
+                <AIChatWindow
+                  messages={messages}
+                  isLoading={isLoading}
+                  error={error}
+                  courseTitle={selectedCourse?.title}
+                  onSendMessage={handleSendMessage}
+                  suggestedQuestions={suggestedQuestions}
+                />
+              </>
+            ) : (
+              /* Knowledge Base Status View (Faculty / Admin) */
+              <div className="flex-1 overflow-y-auto p-6 bg-[#F8FAFC]">
+                <div className="max-w-5xl mx-auto space-y-6">
+                  <div className="bg-white border border-gray-200/80 rounded-[20px] p-6 flex items-center justify-between shadow-sm">
+                    <div>
+                      <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                        <Database className="w-5 h-5 text-blue-600" />
+                        Course Knowledge Base Documents
+                      </h3>
+                      <p className="text-xs text-gray-400 font-medium mt-1">
+                        Manage vector embeddings, view extraction statuses, and retry failed processing jobs.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => fetchKnowledgeDocs(selectedCourseId)}
+                      className="flex items-center gap-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Refresh Status</span>
+                    </button>
+                  </div>
+
+                  {docsLoading ? (
+                    <div className="p-8 text-center text-gray-400 text-xs">
+                      Loading knowledge base records...
+                    </div>
+                  ) : knowledgeDocs.length === 0 ? (
+                    <div className="p-12 text-center border-2 border-dashed border-gray-200 rounded-[20px] bg-white">
+                      <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                      <h4 className="text-sm font-bold text-gray-700 mb-1">
+                        No Knowledge Base Documents Yet
+                      </h4>
+                      <p className="text-xs text-gray-400 max-w-md mx-auto">
+                        Learning material documents (PDFs, notes) uploaded to course lessons will automatically process and appear here.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-white border border-gray-200/80 rounded-[20px] overflow-hidden shadow-sm">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-gray-50 border-b border-gray-150 uppercase tracking-wider text-gray-500 font-bold">
+                          <tr>
+                            <th className="py-3.5 px-4">Document Name</th>
+                            <th className="py-3.5 px-4">Lesson</th>
+                            <th className="py-3.5 px-4">Status</th>
+                            <th className="py-3.5 px-4">Chunks</th>
+                            <th className="py-3.5 px-4">Uploaded</th>
+                            <th className="py-3.5 px-4 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 text-gray-700 font-medium">
+                          {knowledgeDocs.map((doc) => (
+                            <tr key={doc._id} className="hover:bg-gray-50 transition-colors">
+                              <td className="py-3.5 px-4 font-bold text-gray-900 flex items-center gap-2">
+                                <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                                <span>{doc.fileName}</span>
+                              </td>
+                              <td className="py-3.5 px-4 text-xs text-gray-500">
+                                {doc.lessonId?.title || 'General'}
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <DocumentStatusBadge status={doc.processingStatus} />
+                                {doc.errorMessage && (
+                                  <p className="text-[10px] text-rose-600 mt-1 max-w-xs truncate" title={doc.errorMessage}>
+                                    {doc.errorMessage}
+                                  </p>
+                                )}
+                              </td>
+                              <td className="py-3.5 px-4 text-xs font-mono font-bold text-gray-700">
+                                {doc.chunkCount || 0}
+                              </td>
+                              <td className="py-3.5 px-4 text-xs text-gray-400">
+                                {new Date(doc.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="py-3.5 px-4 text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  {doc.processingStatus === 'FAILED' && (
+                                    <button
+                                      onClick={() => handleRetryDoc(doc._id)}
+                                      title="Retry vector processing"
+                                      className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    >
+                                      <RefreshCw className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => handleDeleteDoc(doc._id)}
+                                    title="Remove from knowledge base"
+                                    className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </main>
       </div>
     </div>
   );

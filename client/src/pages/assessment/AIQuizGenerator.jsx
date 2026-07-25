@@ -72,12 +72,17 @@ const AIQuizGenerator = () => {
     try {
       setLoading(true);
       const res = await getCourses();
-      const courseList = res.data || res || [];
+      const rawData = res.data || res;
+      const courseList = Array.isArray(rawData)
+        ? rawData
+        : (Array.isArray(rawData?.courses) ? rawData.courses : []);
+      
       setCourses(courseList);
       if (courseList.length > 0) {
         handleCourseChange(courseList[0]._id);
       }
     } catch (err) {
+      console.error('Failed to load courses:', err);
       setError('Failed to load courses.');
     } finally {
       setLoading(false);
