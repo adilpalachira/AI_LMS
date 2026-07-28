@@ -50,6 +50,10 @@ import QuizPreview from './pages/assessment/QuizPreview';
 // Module 6 AI Tutor Page
 import AITutorPage from './pages/ai/AITutorPage';
 
+// Module 8 Personalized Learning & Study Planner Pages
+import PersonalizedLearning from './pages/learning/PersonalizedLearning';
+import StudyPlannerPage from './pages/learning/StudyPlannerPage';
+
 // Hook
 import { useAuth } from './hooks/useAuth';
 
@@ -406,6 +410,28 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <AITutorPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Module 8 Personalized Learning & Study Planner Routes */}
+          <Route
+            path="/personalized-learning"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Student']}>
+                  <PersonalizedLearning />
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/study-planner"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Student']}>
+                  <StudyPlannerPage />
+                </RoleGuard>
               </ProtectedRoute>
             }
           />

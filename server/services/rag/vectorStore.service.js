@@ -11,7 +11,7 @@ let pineconeClient = null;
 const getPineconeClient = () => {
   const apiKey = process.env.PINECONE_API_KEY;
   if (!apiKey || apiKey.trim() === '') {
-    throw new Error('PINECONE_API_KEY is not configured in environment variables');
+    return null;
   }
 
   if (!pineconeClient) {
@@ -25,6 +25,7 @@ const getPineconeClient = () => {
  */
 const getIndexNamespace = () => {
   const client = getPineconeClient();
+  if (!client) return null;
   const indexName = config.PINECONE_INDEX;
   const namespace = config.PINECONE_NAMESPACE;
   return client.index(indexName).namespace(namespace);
@@ -41,7 +42,10 @@ const upsertVectors = async (vectorRecords) => {
 
   try {
     const ns = getIndexNamespace();
-    // Pinecone handles batches of vectors
+    if (!ns) {
+      console.log('[Vector Store] PINECONE_API_KEY not configured. Skipping vector store upsert.');
+      return;
+    }
     const records = vectorRecords.map(r => ({
       id: r.id,
       values: r.vector,
@@ -51,8 +55,7 @@ const upsertVectors = async (vectorRecords) => {
     await ns.upsert(records);
     console.log(`[Vector Store] Successfully upserted ${records.length} vector records to Pinecone.`);
   } catch (error) {
-    console.error('[Vector Store] Upsert Error:', error.message);
-    throw new Error(`Pinecone vector store insertion failed: ${error.message}`);
+    console.error('[Vector Store] Upsert Warning:', error.message);
   }
 };
 
@@ -66,14 +69,18 @@ const upsertVectors = async (vectorRecords) => {
  */
 const similaritySearch = async (queryVector, courseId, topK = config.TOP_K) => {
   if (!queryVector || queryVector.length === 0) {
-    throw new Error('Query vector is required for similarity search');
+    return [];
   }
   if (!courseId) {
-    throw new Error('Course ID filter is mandatory for security');
+    return [];
   }
 
   try {
     const ns = getIndexNamespace();
+    if (!ns) {
+      console.log('[Vector Store] PINECONE_API_KEY not configured. Skipping vector store search.');
+      return [];
+    }
     const queryResponse = await ns.query({
       vector: queryVector,
       topK,
@@ -92,8 +99,8 @@ const similaritySearch = async (queryVector, courseId, topK = config.TOP_K) => {
         metadata: m.metadata || {}
       }));
   } catch (error) {
-    console.error('[Vector Store] Similarity Search Error:', error.message);
-    throw new Error(`Pinecone vector search failed: ${error.message}`);
+    console.error('[Vector Store] Similarity Search Warning:', error.message);
+    return [];
   }
 };
 

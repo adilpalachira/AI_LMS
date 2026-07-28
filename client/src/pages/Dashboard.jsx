@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -14,11 +15,13 @@ import {
   Layers,
   HelpCircle,
   Activity,
-  AlertCircle
+  AlertCircle,
+  BrainCircuit
 } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Pending works checklist
   const pendingWorks = [
@@ -277,7 +280,10 @@ const Dashboard = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <button className="w-full flex items-center justify-between p-3.5 bg-gray-50 hover:bg-gray-100/80 rounded-xl border border-gray-150 text-xs font-semibold text-gray-800 transition-all text-left">
+                  <button
+                    onClick={() => navigate('/ai-tutor')}
+                    className="w-full flex items-center justify-between p-3.5 bg-gray-50 hover:bg-gray-100/80 rounded-xl border border-gray-150 text-xs font-semibold text-gray-800 transition-all text-left"
+                  >
                     <span className="flex items-center gap-2">
                       <Sparkles size={14} className="text-blue-600" />
                       Ask AI Tutor
@@ -285,25 +291,23 @@ const Dashboard = () => {
                     <ArrowRight size={12} className="text-gray-400" />
                   </button>
 
-                  <button className="w-full flex items-center justify-between p-3.5 bg-gray-50 hover:bg-gray-100/80 rounded-xl border border-gray-150 text-xs font-semibold text-gray-800 transition-all text-left">
+                  <button
+                    onClick={() => navigate('/personalized-learning')}
+                    className="w-full flex items-center justify-between p-3.5 bg-gray-50 hover:bg-gray-100/80 rounded-xl border border-gray-150 text-xs font-semibold text-gray-800 transition-all text-left"
+                  >
                     <span className="flex items-center gap-2">
-                      <Upload size={14} className="text-gray-500" />
-                      Upload Notes
+                      <BrainCircuit size={14} className="text-purple-600" />
+                      Personalized Learning
                     </span>
                     <ArrowRight size={12} className="text-gray-400" />
                   </button>
 
-                  <button className="w-full flex items-center justify-between p-3.5 bg-gray-50 hover:bg-gray-100/80 rounded-xl border border-gray-150 text-xs font-semibold text-gray-800 transition-all text-left">
+                  <button
+                    onClick={() => navigate('/study-planner')}
+                    className="w-full flex items-center justify-between p-3.5 bg-gray-50 hover:bg-gray-100/80 rounded-xl border border-gray-150 text-xs font-semibold text-gray-800 transition-all text-left"
+                  >
                     <span className="flex items-center gap-2">
-                      <FileText size={14} className="text-gray-500" />
-                      Take Quiz
-                    </span>
-                    <ArrowRight size={12} className="text-gray-400" />
-                  </button>
-
-                  <button className="w-full flex items-center justify-between p-3.5 bg-gray-50 hover:bg-gray-100/80 rounded-xl border border-gray-150 text-xs font-semibold text-gray-800 transition-all text-left">
-                    <span className="flex items-center gap-2">
-                      <Calendar size={14} className="text-gray-500" />
+                      <Calendar size={14} className="text-emerald-600" />
                       Open Study Planner
                     </span>
                     <ArrowRight size={12} className="text-gray-400" />

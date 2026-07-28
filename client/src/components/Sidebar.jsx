@@ -38,7 +38,10 @@ const Sidebar = () => {
       { name: 'Question Bank', icon: BookOpen, path: '/question-bank' },
     ] : []),
     { name: 'AI Tutor', icon: BrainCircuit, path: '/ai-tutor' },
-    { name: 'Study Planner', icon: CalendarRange, path: '#' },
+    ...(user?.role === 'Student' ? [
+      { name: 'Personalized Learning', icon: BrainCircuit, path: '/personalized-learning' },
+      { name: 'Study Planner', icon: CalendarRange, path: '/study-planner' },
+    ] : []),
     { name: 'Analytics', icon: LineChart, path: '#' },
     { name: 'Calendar', icon: Calendar, path: '#' },
     { name: 'Messages', icon: MessageSquare, path: '#' },

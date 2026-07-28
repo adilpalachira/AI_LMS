@@ -90,6 +90,8 @@ app.use('/api/questions', require('./routes/question.routes'));
 app.use('/api/ai/tutor', require('./routes/aiTutor.routes'));
 app.use('/api/ai/quizzes', require('./routes/aiQuiz.routes'));
 app.use('/api/ai/knowledge-documents', require('./routes/knowledgeDocument.routes'));
+app.use('/api/learning', require('./routes/learning.routes'));
+app.use('/api/study-plans', require('./routes/studyPlan.routes'));
 
 // Centralized Error Handler Middleware
 app.use(errorHandler);
