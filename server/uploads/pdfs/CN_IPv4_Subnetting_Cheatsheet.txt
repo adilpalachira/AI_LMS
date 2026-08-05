@@ -1,0 +1,11 @@
+IPV4 SUBNETTING & VLSM CHEATSHEET
+
+Given IP block: 192.168.10.0/24 (256 Total Addresses, 254 Usable Hosts).
+Subnet Mask: 255.255.255.0 (/24).
+
+To divide into 4 equal subnets:
+Borrow 2 bits (2^2 = 4 subnets):
+- Subnet 1: 192.168.10.0/26 (Range: .1 to .62, Broadcast: .63)
+- Subnet 2: 192.168.10.64/26 (Range: .65 to .126, Broadcast: .127)
+- Subnet 3: 192.168.10.128/26 (Range: .129 to .190, Broadcast: .191)
+- Subnet 4: 192.168.10.192/26 (Range: .193 to .254, Broadcast: .255)

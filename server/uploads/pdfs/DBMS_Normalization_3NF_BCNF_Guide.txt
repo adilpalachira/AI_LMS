@@ -1,0 +1,10 @@
+DATABASE NORMALIZATION DEGREE REFERENCE
+
+1NF: All attributes contain atomic values (no nested relations or array lists).
+2NF: Relation is in 1NF and no non-prime attribute is partially dependent on any candidate key.
+3NF: Relation is in 2NF and no non-prime attribute is transitively dependent on candidate keys (If X -> Y, then X is Superkey or Y is Prime attribute).
+BCNF: For every functional dependency X -> Y, X MUST be a Superkey.
+
+Decomposition Properties:
+- Lossless Join Guarantee: R1 INTERSECT R2 -> R1 or R1 INTERSECT R2 -> R2.
+- Dependency Preservation Guarantee.

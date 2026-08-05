@@ -1,0 +1,10 @@
+SYSTEM CALL MECHANICS & CPU DUAL-MODE EXECUTION
+
+Modern CPUs support hardware execution modes: User Mode (Unprivileged, Ring 3) and Kernel Mode (Privileged, Ring 0).
+
+When a user application invokes read(fd, buf, count):
+1. Parameters are passed into CPU registers (e.g., RAX=0 for sys_read).
+2. A software interrupt trap instruction is executed.
+3. The CPU hardware switches execution privilege level to Ring 0.
+4. The Kernel Interrupt Vector Table (IVT) resolves the handler address sys_read.
+5. Upon completion, sys_ret restores user registers and returns to Ring 3.

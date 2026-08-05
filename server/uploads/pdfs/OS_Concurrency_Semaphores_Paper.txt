@@ -1,0 +1,9 @@
+SYNCHRONIZATION & SEMAPHORE MATHEMATICAL SPECIFICATION
+
+A Semaphore S is an integer variable accessed through two atomic operations:
+- wait(S) or P(S): decrement S. If S < 0, block calling thread.
+- signal(S) or V(S): increment S. If threads blocked, unblock one.
+
+Banker's Algorithm for Deadlock Avoidance:
+Requires tracking Max Demand, Allocation, and Need matrices.
+State is SAFE if there exists a sequence <P1, P2, ..., Pn> of process execution where Need[i] <= Available + sum(Allocated).
