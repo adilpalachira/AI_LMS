@@ -48,7 +48,7 @@ const StudyPlanTaskSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Pending', 'Completed', 'Skipped', 'Rescheduled'],
+      enum: ['Pending', 'In-Progress', 'Completed', 'Skipped', 'Rescheduled'],
       default: 'Pending'
     },
     completedAt: {

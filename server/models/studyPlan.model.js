@@ -21,6 +21,10 @@ const StudyPlanSchema = new mongoose.Schema(
       required: [true, 'Study plan title is required'],
       trim: true
     },
+    startDate: {
+      type: Date,
+      default: Date.now
+    },
     examDate: {
       type: Date,
       required: [true, 'Exam date is required']
@@ -38,6 +42,20 @@ const StudyPlanSchema = new mongoose.Schema(
     learningGoal: {
       type: String,
       default: ''
+    },
+    progressPercentage: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100
+    },
+    totalTasksCount: {
+      type: Number,
+      default: 0
+    },
+    completedTasksCount: {
+      type: Number,
+      default: 0
     },
     status: {
       type: String,
