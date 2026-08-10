@@ -96,8 +96,21 @@ const queryCourses = async (queryParams, currentUser) => {
 
   const totalCourses = await Course.countDocuments(query);
 
+  // Check enrollment status if current user is Student
+  let enrolledCourseIds = new Set();
+  if (currentUser && currentUser.role === 'Student') {
+    const studentEnrollments = await Enrollment.find({ student: currentUser._id, status: 'Active' }).select('course');
+    enrolledCourseIds = new Set(studentEnrollments.map(e => e.course.toString()));
+  }
+
+  const courseList = courses.map(c => {
+    const courseObj = c.toObject();
+    courseObj.isEnrolled = enrolledCourseIds.has(c._id.toString());
+    return courseObj;
+  });
+
   return {
-    courses,
+    courses: courseList,
     pagination: {
       totalCourses,
       totalPages: Math.ceil(totalCourses / limitNum),
