@@ -9,7 +9,7 @@ const { formatResponse } = require('../utils/response');
  */
 const getLearningProfile = async (req, res, next) => {
   try {
-    const studentId = req.user.id;
+    const studentId = req.user._id;
     const profile = await personalizationService.getOrCreateProfile(studentId);
     return res.status(200).json(
       formatResponse(true, 'Learning profile retrieved successfully', profile)
@@ -25,7 +25,7 @@ const getLearningProfile = async (req, res, next) => {
  */
 const updateLearningProfile = async (req, res, next) => {
   try {
-    const studentId = req.user.id;
+    const studentId = req.user._id;
     const { preferredStudyTime, availableStudyHours, learningGoal, learningPreferences } = req.body;
 
     const profile = await personalizationService.getOrCreateProfile(studentId);
@@ -51,7 +51,7 @@ const updateLearningProfile = async (req, res, next) => {
  */
 const analyzePerformance = async (req, res, next) => {
   try {
-    const studentId = req.user.id;
+    const studentId = req.user._id;
     const result = await personalizationService.analyzeStudentPerformance(studentId);
     return res.status(200).json(
       formatResponse(true, 'Student performance analysis completed', result)
@@ -67,7 +67,7 @@ const analyzePerformance = async (req, res, next) => {
  */
 const getRecommendations = async (req, res, next) => {
   try {
-    const studentId = req.user.id;
+    const studentId = req.user._id;
     const recommendations = await LearningRecommendation.find({
       studentId,
       status: 'Active'
@@ -87,7 +87,7 @@ const getRecommendations = async (req, res, next) => {
  */
 const getLearningPath = async (req, res, next) => {
   try {
-    const studentId = req.user.id;
+    const studentId = req.user._id;
     const { courseId } = req.params;
 
     const pathData = await personalizationService.getLearningPath(studentId, courseId);

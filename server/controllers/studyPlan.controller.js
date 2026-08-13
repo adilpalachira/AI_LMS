@@ -9,18 +9,21 @@ const { formatResponse } = require('../utils/response');
  */
 const createStudyPlan = async (req, res, next) => {
   try {
-    const studentId = req.user.id;
-    const { courseId, examDate, availableHoursPerDay, preferredStudyTime, learningGoal } = req.body;
+    const studentId = req.user._id.toString();
+    const { courseId, startDate, examDate, availableHoursPerDay, preferredStudyTime, learningGoal } = req.body;
 
-    if (!courseId || !examDate) {
-      return res.status(400).json(
-        formatResponse(false, 'Course ID and exam date are required')
-      );
+    if (!courseId) {
+      return res.status(400).json(formatResponse(false, 'Target course selection is required'));
+    }
+
+    if (!examDate) {
+      return res.status(400).json(formatResponse(false, 'Exam / end date is required'));
     }
 
     const result = await studyPlannerService.generateStudyPlan({
       studentId,
       courseId,
+      startDate,
       examDate,
       availableHoursPerDay,
       preferredStudyTime,
@@ -37,12 +40,15 @@ const createStudyPlan = async (req, res, next) => {
 
 /**
  * GET /api/study-plans
- * Get all active study plans for the logged in student
+ * Get all study plans for the logged in student
  */
 const getStudyPlans = async (req, res, next) => {
   try {
-    const studentId = req.user.id;
-    const plans = await StudyPlan.find({ studentId }).populate('courseId', 'title code duration');
+    const studentId = req.user._id.toString();
+    const plans = await StudyPlan.find({ studentId })
+      .populate('courseId', 'title code duration thumbnail')
+      .sort({ createdAt: -1 });
+
     return res.status(200).json(
       formatResponse(true, 'Study plans retrieved successfully', plans)
     );
@@ -57,8 +63,8 @@ const getStudyPlans = async (req, res, next) => {
  */
 const getStudyPlanById = async (req, res, next) => {
   try {
-    const studentId = req.user.id;
-    const plan = await StudyPlan.findById(req.params.id).populate('courseId', 'title code');
+    const studentId = req.user._id.toString();
+    const plan = await StudyPlan.findById(req.params.id).populate('courseId', 'title code duration');
 
     if (!plan) {
       return res.status(404).json(formatResponse(false, 'Study plan not found'));
@@ -80,11 +86,11 @@ const getStudyPlanById = async (req, res, next) => {
 
 /**
  * DELETE /api/study-plans/:id
- * Delete or archive a study plan and associated tasks
+ * Delete a study plan and its associated tasks
  */
 const deleteStudyPlan = async (req, res, next) => {
   try {
-    const studentId = req.user.id;
+    const studentId = req.user._id.toString();
     const plan = await StudyPlan.findById(req.params.id);
 
     if (!plan) {
@@ -99,7 +105,7 @@ const deleteStudyPlan = async (req, res, next) => {
     await StudyPlan.findByIdAndDelete(plan._id);
 
     return res.status(200).json(
-      formatResponse(true, 'Study plan and tasks deleted successfully')
+      formatResponse(true, 'Study plan and associated tasks deleted successfully')
     );
   } catch (error) {
     next(error);
@@ -112,21 +118,27 @@ const deleteStudyPlan = async (req, res, next) => {
  */
 const completeTask = async (req, res, next) => {
   try {
-    const task = await StudyPlanTask.findById(req.params.id).populate('studyPlanId');
-    if (!task) {
-      return res.status(404).json(formatResponse(false, 'Task not found'));
-    }
-
-    if (task.studyPlanId.studentId.toString() !== req.user.id) {
-      return res.status(403).json(formatResponse(false, 'Unauthorized task update'));
-    }
-
-    task.status = 'Completed';
-    task.completedAt = new Date();
-    await task.save();
-
+    const studentId = req.user._id.toString();
+    const result = await studyPlannerService.updateTaskStatus(req.params.id, studentId, 'Completed');
     return res.status(200).json(
-      formatResponse(true, 'Task marked as complete', task)
+      formatResponse(true, 'Task marked as complete', result)
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * PATCH /api/study-plans/tasks/:id/status
+ * Generic update status for a study plan task
+ */
+const updateTaskStatus = async (req, res, next) => {
+  try {
+    const studentId = req.user._id.toString();
+    const { status } = req.body;
+    const result = await studyPlannerService.updateTaskStatus(req.params.id, studentId, status);
+    return res.status(200).json(
+      formatResponse(true, `Task status updated to ${status}`, result)
     );
   } catch (error) {
     next(error);
@@ -139,14 +151,15 @@ const completeTask = async (req, res, next) => {
  */
 const rescheduleTask = async (req, res, next) => {
   try {
+    const studentId = req.user._id.toString();
     const { newDate } = req.body;
     if (!newDate) {
-      return res.status(400).json(formatResponse(false, 'New date is required'));
+      return res.status(400).json(formatResponse(false, 'New target date is required'));
     }
 
-    const task = await studyPlannerService.rescheduleTask(req.params.id, req.user.id, newDate);
+    const task = await studyPlannerService.rescheduleTask(req.params.id, studentId, newDate);
     return res.status(200).json(
-      formatResponse(true, 'Study task rescheduled', task)
+      formatResponse(true, 'Study task rescheduled successfully', task)
     );
   } catch (error) {
     next(error);
@@ -159,20 +172,10 @@ const rescheduleTask = async (req, res, next) => {
  */
 const skipTask = async (req, res, next) => {
   try {
-    const task = await StudyPlanTask.findById(req.params.id).populate('studyPlanId');
-    if (!task) {
-      return res.status(404).json(formatResponse(false, 'Task not found'));
-    }
-
-    if (task.studyPlanId.studentId.toString() !== req.user.id) {
-      return res.status(403).json(formatResponse(false, 'Unauthorized action'));
-    }
-
-    task.status = 'Skipped';
-    await task.save();
-
+    const studentId = req.user._id.toString();
+    const result = await studyPlannerService.updateTaskStatus(req.params.id, studentId, 'Skipped');
     return res.status(200).json(
-      formatResponse(true, 'Study task skipped', task)
+      formatResponse(true, 'Study task skipped', result)
     );
   } catch (error) {
     next(error);
@@ -185,6 +188,7 @@ module.exports = {
   getStudyPlanById,
   deleteStudyPlan,
   completeTask,
+  updateTaskStatus,
   rescheduleTask,
   skipTask
 };

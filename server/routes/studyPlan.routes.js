@@ -13,6 +13,7 @@ router.delete('/:id', studyPlanController.deleteStudyPlan);
 
 // Task Action Endpoints
 router.patch('/tasks/:id/complete', studyPlanController.completeTask);
+router.patch('/tasks/:id/status', studyPlanController.updateTaskStatus);
 router.patch('/tasks/:id/reschedule', studyPlanController.rescheduleTask);
 router.patch('/tasks/:id/skip', studyPlanController.skipTask);
 
