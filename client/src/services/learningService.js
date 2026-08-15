@@ -61,6 +61,11 @@ const learningService = {
   skipTask: async (taskId) => {
     const response = await api.patch(`/study-plans/tasks/${taskId}/skip`);
     return response.data;
+  },
+
+  updateTaskStatus: async (taskId, status) => {
+    const response = await api.patch(`/study-plans/tasks/${taskId}/status`, { status });
+    return response.data;
   }
 };
 

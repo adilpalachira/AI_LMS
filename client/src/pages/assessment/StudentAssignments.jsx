@@ -6,7 +6,7 @@ import AssignmentCard from '../../components/assessment/AssignmentCard';
 import FileUpload from '../../components/content/FileUpload';
 import EmptyState from '../../components/content/EmptyState';
 import { getCourseById } from '../../services/courseService';
-import { getAssignmentsByCourse, submitAssignment } from '../../services/assessmentService';
+import { getAssignmentsByCourse, submitAssignment, getAssignmentById } from '../../services/assessmentService';
 import { FileText, CheckCircle2, AlertCircle, Upload, ArrowLeft } from 'lucide-react';
 
 const StudentAssignments = () => {
@@ -25,15 +25,29 @@ const StudentAssignments = () => {
   const fetchAssignmentsData = async () => {
     setLoading(true);
     try {
-      const courseRes = await getCourseById(courseId);
-      if (courseRes.success) setCourse(courseRes.data);
+      let activeCourseId = courseId;
+      let directAssignment = null;
 
-      const assignRes = await getAssignmentsByCourse(courseId);
-      if (assignRes.success) {
-        setAssignments(assignRes.data);
-        if (assignmentId) {
-          const target = assignRes.data.find(a => a._id === assignmentId);
-          if (target) setSelectedAssignment(target);
+      if (!activeCourseId && assignmentId) {
+        const directAssignRes = await getAssignmentById(assignmentId);
+        if (directAssignRes.success && directAssignRes.data) {
+          directAssignment = directAssignRes.data;
+          setSelectedAssignment(directAssignment);
+          activeCourseId = directAssignment.courseId?._id || directAssignment.courseId;
+        }
+      }
+
+      if (activeCourseId) {
+        const courseRes = await getCourseById(activeCourseId);
+        if (courseRes.success) setCourse(courseRes.data);
+
+        const assignRes = await getAssignmentsByCourse(activeCourseId);
+        if (assignRes.success) {
+          setAssignments(assignRes.data);
+          if (assignmentId) {
+            const target = assignRes.data.find(a => a._id === assignmentId) || directAssignment;
+            if (target) setSelectedAssignment(target);
+          }
         }
       }
     } catch (err) {

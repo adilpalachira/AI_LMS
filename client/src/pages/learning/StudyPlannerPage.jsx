@@ -5,7 +5,7 @@ import { getMyEnrollments } from '../../services/courseService';
 import StudyTask from '../../components/learning/StudyTask';
 import StudyCalendar from '../../components/learning/StudyCalendar';
 import StudyPlanFormModal from '../../components/learning/StudyPlanFormModal';
-import { CalendarRange, Sparkles, Plus, Trash2, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CalendarRange, Sparkles, Plus, Trash2, Clock, CheckCircle2, AlertCircle, Target, BookOpen } from 'lucide-react';
 
 const StudyPlannerPage = () => {
   const [studyPlans, setStudyPlans] = useState([]);
@@ -31,10 +31,13 @@ const StudyPlannerPage = () => {
         getMyEnrollments()
       ]);
 
-      if (plansRes.success) {
+      if (plansRes.success && Array.isArray(plansRes.data)) {
         setStudyPlans(plansRes.data);
         if (plansRes.data.length > 0) {
-          selectPlan(plansRes.data[0]._id);
+          await selectPlan(plansRes.data[0]._id);
+        } else {
+          setActivePlan(null);
+          setTasks([]);
         }
       }
 
@@ -51,9 +54,9 @@ const StudyPlannerPage = () => {
   const selectPlan = async (planId) => {
     try {
       const res = await learningService.getStudyPlanById(planId);
-      if (res.success) {
+      if (res.success && res.data) {
         setActivePlan(res.data.plan);
-        setTasks(res.data.tasks);
+        setTasks(res.data.tasks || []);
       }
     } catch (err) {
       console.error('[StudyPlannerPage] Plan details error:', err);
@@ -68,10 +71,10 @@ const StudyPlannerPage = () => {
       if (res.success) {
         setIsModalOpen(false);
         setMessage('AI Study Plan generated successfully!');
-        fetchInitialData();
+        await fetchInitialData();
       }
     } catch (err) {
-      setMessage('Failed to generate study plan.');
+      setMessage(err.response?.data?.message || 'Failed to generate study plan.');
     } finally {
       setGenerating(false);
     }
@@ -81,7 +84,14 @@ const StudyPlannerPage = () => {
     try {
       const res = await learningService.completeTask(taskId);
       if (res.success) {
-        setTasks(tasks.map(t => t._id === taskId ? { ...t, status: 'Completed' } : t));
+        const updatedTask = res.data.task || res.data;
+        const updatedTasks = tasks.map(t => t._id === taskId ? { ...t, status: 'Completed' } : t);
+        setTasks(updatedTasks);
+        if (res.data.plan) {
+          setActivePlan(res.data.plan);
+        } else {
+          recalculateLocalProgress(updatedTasks);
+        }
       }
     } catch (err) {
       console.error('Complete task error:', err);
@@ -92,7 +102,13 @@ const StudyPlannerPage = () => {
     try {
       const res = await learningService.skipTask(taskId);
       if (res.success) {
-        setTasks(tasks.map(t => t._id === taskId ? { ...t, status: 'Skipped' } : t));
+        const updatedTasks = tasks.map(t => t._id === taskId ? { ...t, status: 'Skipped' } : t);
+        setTasks(updatedTasks);
+        if (res.data.plan) {
+          setActivePlan(res.data.plan);
+        } else {
+          recalculateLocalProgress(updatedTasks);
+        }
       }
     } catch (err) {
       console.error('Skip task error:', err);
@@ -100,27 +116,46 @@ const StudyPlannerPage = () => {
   };
 
   const handleRescheduleTask = async (task) => {
-    const newDateStr = prompt('Enter new date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+    const newDateStr = prompt('Enter new target date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
     if (!newDateStr) return;
     try {
       const res = await learningService.rescheduleTask(task._id, newDateStr);
       if (res.success) {
-        setTasks(tasks.map(t => t._id === task._id ? { ...t, status: 'Rescheduled', date: newDateStr } : t));
+        const updatedTasks = tasks.map(t => t._id === task._id ? { ...t, status: 'Rescheduled', date: newDateStr } : t);
+        setTasks(updatedTasks);
       }
     } catch (err) {
-      alert('Invalid date format');
+      alert(err.response?.data?.message || 'Invalid date format');
     }
   };
 
+  const recalculateLocalProgress = (updatedTasks) => {
+    if (!activePlan) return;
+    const active = updatedTasks.filter(t => t.status !== 'Skipped');
+    const completed = updatedTasks.filter(t => t.status === 'Completed');
+    const pct = active.length > 0 ? Math.round((completed.length / active.length) * 100) : 0;
+    setActivePlan(prev => prev ? {
+      ...prev,
+      totalTasksCount: updatedTasks.length,
+      completedTasksCount: completed.length,
+      progressPercentage: pct
+    } : null);
+  };
+
   const handleDeletePlan = async (planId) => {
-    if (!confirm('Are you sure you want to delete this study plan?')) return;
+    if (!window.confirm('Are you sure you want to delete this study plan?')) return;
     try {
       const res = await learningService.deleteStudyPlan(planId);
       if (res.success) {
-        setStudyPlans(studyPlans.filter(p => p._id !== planId));
+        const remainingPlans = studyPlans.filter(p => p._id !== planId);
+        setStudyPlans(remainingPlans);
         if (activePlan?._id === planId) {
-          setActivePlan(null);
-          setTasks([]);
+          if (remainingPlans.length > 0) {
+            await selectPlan(remainingPlans[0]._id);
+          } else {
+            setActivePlan(null);
+            setTasks([]);
+          }
         }
       }
     } catch (err) {
@@ -135,7 +170,7 @@ const StudyPlannerPage = () => {
       const sDate = new Date(selectedCalendarDate).toDateString();
       if (tDate !== sDate) return false;
     }
-    if (filterTab === 'Pending') return t.status === 'Pending';
+    if (filterTab === 'Pending') return t.status === 'Pending' || t.status === 'In-Progress' || t.status === 'Rescheduled';
     if (filterTab === 'Completed') return t.status === 'Completed';
     return true;
   });
@@ -147,6 +182,11 @@ const StudyPlannerPage = () => {
     const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
     return days > 0 ? days : 0;
   };
+
+  // Calculated Progress stats
+  const totalTasks = tasks.filter(t => t.status !== 'Skipped').length;
+  const completedTasks = tasks.filter(t => t.status === 'Completed').length;
+  const progressPct = activePlan?.progressPercentage ?? (totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0);
 
   return (
     <div className="flex bg-[#F8FAFC] min-h-screen">
@@ -187,13 +227,13 @@ const StudyPlannerPage = () => {
         {loading ? (
           <div className="p-12 text-center text-gray-400 font-medium">Loading study planner...</div>
         ) : studyPlans.length === 0 ? (
-          <div className="bg-white border border-gray-200/80 rounded-3xl p-12 text-center space-y-4 max-w-md mx-auto">
+          <div className="bg-white border border-gray-200/80 rounded-3xl p-12 text-center space-y-4 max-w-md mx-auto shadow-sm">
             <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 mx-auto flex items-center justify-center">
               <Sparkles size={24} />
             </div>
             <h3 className="text-lg font-bold text-gray-900">No Study Plans Found</h3>
             <p className="text-xs text-gray-500 leading-relaxed">
-              Generate a personalized study plan for your course to get AI-powered daily study tasks.
+              Generate a personalized study plan for your enrolled course to get AI-powered daily study tasks.
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
@@ -207,18 +247,18 @@ const StudyPlannerPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Tasks List & Filters */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Active Plan Selector & Exam Countdown */}
+              {/* Active Plan Card with Progress */}
               {activePlan && (
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-3xl shadow-sm space-y-4">
-                  <div className="flex items-center justify-between">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-3xl shadow-sm space-y-4 relative overflow-hidden">
+                  <div className="flex items-center justify-between gap-4">
                     <select
                       value={activePlan._id}
                       onChange={(e) => selectPlan(e.target.value)}
-                      className="bg-white/10 text-white border border-white/20 px-3 py-1.5 rounded-xl text-xs font-semibold focus:outline-none"
+                      className="bg-white/10 text-white border border-white/20 px-3 py-1.5 rounded-xl text-xs font-semibold focus:outline-none max-w-xs truncate"
                     >
                       {studyPlans.map((p) => (
                         <option key={p._id} value={p._id} className="text-gray-900">
-                          {p.title}
+                          {p.title || (p.courseId?.title ? `${p.courseId.title} Plan` : 'Study Plan')}
                         </option>
                       ))}
                     </select>
@@ -232,6 +272,13 @@ const StudyPlannerPage = () => {
                     </button>
                   </div>
 
+                  {activePlan.learningGoal && (
+                    <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-xs font-medium text-white/90">
+                      <Target size={12} />
+                      Goal: {activePlan.learningGoal}
+                    </div>
+                  )}
+
                   <div className="flex items-end justify-between pt-2">
                     <div>
                       <span className="text-xs font-medium text-blue-100 uppercase tracking-wider">Exam Countdown</span>
@@ -239,9 +286,23 @@ const StudyPlannerPage = () => {
                         {getExamCountdown()} Days Remaining
                       </h2>
                     </div>
-                    <div className="text-right text-xs text-blue-100">
+                    <div className="text-right text-xs text-blue-100 space-y-0.5">
                       <p>{activePlan.availableHoursPerDay} hrs / day</p>
                       <p className="font-semibold">{activePlan.preferredStudyTime} Sessions</p>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="space-y-1.5 pt-2 border-t border-white/10">
+                    <div className="flex items-center justify-between text-xs font-semibold">
+                      <span>Course Prep Progress</span>
+                      <span>{completedTasks} / {totalTasks} Tasks ({progressPct}%)</span>
+                    </div>
+                    <div className="w-full h-2.5 bg-white/20 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-400 rounded-full transition-all duration-500"
+                        style={{ width: `${progressPct}%` }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -316,7 +377,7 @@ const StudyPlannerPage = () => {
               <div className="bg-blue-50/60 border border-blue-100 p-5 rounded-2xl space-y-2">
                 <span className="text-xs font-bold text-blue-700 uppercase tracking-wider flex items-center gap-1">
                   <Sparkles size={14} />
-                  Study Tip
+                  AI Adaptive Insight
                 </span>
                 <p className="text-xs text-blue-900 leading-relaxed">
                   Completing your high-priority daily tasks early increases long-term retention by up to 40%.

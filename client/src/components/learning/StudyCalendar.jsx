@@ -26,11 +26,12 @@ const StudyCalendar = ({ tasks = [], onSelectDate, selectedDate }) => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
-  // Group task counts by date string (YYYY-MM-DD)
+  // Group task counts by local date string (YYYY-MM-DD)
   const taskCounts = {};
   tasks.forEach(t => {
     if (t.date) {
-      const dateKey = new Date(t.date).toISOString().split('T')[0];
+      const d = new Date(t.date);
+      const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       taskCounts[dateKey] = (taskCounts[dateKey] || 0) + 1;
     }
   });
@@ -43,7 +44,7 @@ const StudyCalendar = ({ tasks = [], onSelectDate, selectedDate }) => {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const cellDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-      const dateKey = cellDate.toISOString().split('T')[0];
+      const dateKey = `${cellDate.getFullYear()}-${String(cellDate.getMonth() + 1).padStart(2, '0')}-${String(cellDate.getDate()).padStart(2, '0')}`;
       const hasTasks = taskCounts[dateKey] > 0;
       const isSelected = selectedDate && new Date(selectedDate).toDateString() === cellDate.toDateString();
 
