@@ -1,0 +1,15 @@
+CPU SCHEDULING & MULTI-THREAD CONCURRENCY HANDOUT
+
+Process Control Block (PCB) contains:
+- Process ID (PID)
+- Process State (Running, Ready, Waiting, Terminated)
+- CPU Registers & Stack Pointer
+- Memory Management info (Page Tables)
+- Open File Descriptors
+
+Race Condition Example:
+Two threads increment a shared counter counter++ concurrently. At assembly level, counter++ consists of:
+1. MOV EAX, [counter]
+2. ADD EAX, 1
+3. MOV [counter], EAX
+Without mutual exclusion primitives (Mutex), context switches between steps 1 and 3 cause lost updates.

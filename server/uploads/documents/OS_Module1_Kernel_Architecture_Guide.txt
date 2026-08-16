@@ -1,0 +1,11 @@
+OPERATING SYSTEMS DEGREE LECTURE HANDOUT
+
+Chapter 1: Kernel Architectures & Inter-Process Communication
+
+A monolithic kernel executes memory management, IPC, process scheduling, file system drivers, and hardware interface drivers in a single privileged kernel memory ring (Ring 0). System calls (e.g., fork(), execve(), read(), write()) transition execution from Ring 3 (User Space) to Ring 0 (Kernel Space) via software interrupts (int 0x80 or syscall assembly instruction).
+
+Key POSIX System Calls:
+1. fork(): Clones current process duplicating PCB entries.
+2. execve(): Overwrites process memory space with new ELF executable.
+3. waitpid(): Blocks parent until child process completes.
+4. mmap(): Maps files or devices into memory page space.

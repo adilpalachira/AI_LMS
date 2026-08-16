@@ -1,0 +1,10 @@
+AI DEGREE HANDOUT - SUPERVISED LEARNING
+
+Gradient Descent Variations:
+1. Batch Gradient Descent: Computes gradient using all m training examples every epoch. Smooth convergence, computationally expensive for large datasets.
+2. Stochastic Gradient Descent (SGD): Updates parameters per individual example. Noisy trajectory, faster iteration.
+3. Mini-Batch Gradient Descent: Evaluates sub-batches of size b (e.g. 32, 64, 128).
+
+Regularization Methods:
+- L1 Regularization (Lasso): Adds lambda * sum(|theta|) -> forces sparse feature weights.
+- L2 Regularization (Ridge): Adds lambda * sum(theta^2) -> penalizes large weight values.
