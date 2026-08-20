@@ -1,9 +1,10 @@
 const { getOpenAIClient } = require('./openai.service');
+const geminiService = require('./gemini.service');
 const config = require('../../config/aiConfig');
 
 /**
  * Embedding Service
- * Generates vector embeddings for text chunks and search queries using OpenAI
+ * Generates vector embeddings for text chunks and search queries using Gemini or OpenAI
  */
 
 /**
@@ -16,25 +17,34 @@ const generateEmbedding = async (text) => {
     throw new Error('Cannot generate embedding for empty text');
   }
 
-  const client = getOpenAIClient();
-  if (!client) {
-    // Synthetic fallback vector (1536 float dimensions)
-    return new Array(1536).fill(0.01);
-  }
-
   const cleanedText = text.replace(/\n/g, ' ');
 
-  try {
-    const response = await client.embeddings.create({
-      model: config.EMBEDDING_MODEL,
-      input: cleanedText
-    });
-
-    return response.data[0].embedding;
-  } catch (error) {
-    console.error('[Embedding Service] Generation Error (using fallback vector):', error.message);
-    return new Array(1536).fill(0.01);
+  // 1. Try Gemini Embedding API
+  if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() !== '') {
+    try {
+      return await geminiService.generateGeminiEmbedding(cleanedText);
+    } catch (err) {
+      console.warn('[Embedding Service] Gemini Embedding Error (falling back):', err.message);
+    }
   }
+
+  // 2. Try OpenAI Client
+  const client = getOpenAIClient();
+  if (client) {
+    try {
+      const response = await client.embeddings.create({
+        model: config.EMBEDDING_MODEL,
+        input: cleanedText
+      });
+
+      return response.data[0].embedding;
+    } catch (error) {
+      console.error('[Embedding Service] OpenAI Embedding Generation Error:', error.message);
+    }
+  }
+
+  // Synthetic fallback vector (1536 float dimensions)
+  return new Array(1536).fill(0.01);
 };
 
 /**
@@ -47,27 +57,42 @@ const generateBatchEmbeddings = async (textArray) => {
     return [];
   }
 
-  const client = getOpenAIClient();
-  if (!client) {
-    return textArray.map(() => new Array(1536).fill(0.01));
-  }
-
   const cleanedArray = textArray.map(t => (t || '').replace(/\n/g, ' '));
 
-  try {
-    const response = await client.embeddings.create({
-      model: config.EMBEDDING_MODEL,
-      input: cleanedArray
-    });
-
-    return response.data.map(d => d.embedding);
-  } catch (error) {
-    console.error('[Embedding Service] Batch Generation Error (using fallback vectors):', error.message);
-    return textArray.map(() => new Array(1536).fill(0.01));
+  // 1. Try Gemini Batch Embeddings
+  if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() !== '') {
+    try {
+      const results = [];
+      for (const item of cleanedArray) {
+        const vec = await geminiService.generateGeminiEmbedding(item);
+        results.push(vec);
+      }
+      return results;
+    } catch (err) {
+      console.warn('[Embedding Service] Gemini Batch Embedding Error (falling back):', err.message);
+    }
   }
+
+  // 2. Try OpenAI Client
+  const client = getOpenAIClient();
+  if (client) {
+    try {
+      const response = await client.embeddings.create({
+        model: config.EMBEDDING_MODEL,
+        input: cleanedArray
+      });
+
+      return response.data.map(d => d.embedding);
+    } catch (error) {
+      console.error('[Embedding Service] OpenAI Batch Generation Error:', error.message);
+    }
+  }
+
+  return textArray.map(() => new Array(1536).fill(0.01));
 };
 
 module.exports = {
   generateEmbedding,
   generateBatchEmbeddings
 };
+

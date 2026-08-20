@@ -14,6 +14,21 @@ const successResponse = (res, message, data = null, statusCode = 200) => {
 };
 
 /**
+ * Format a standard JSON response object
+ * @param {boolean} success - Operation success status
+ * @param {string} message - Feedback message
+ * @param {any} data - Response payload data
+ * @returns {Object} Standard formatted response object
+ */
+const formatResponse = (success, message, data = null) => {
+  return {
+    success,
+    message,
+    data
+  };
+};
+
+/**
  * Format and send an error JSON response
  * @param {Object} res - Express response object
  * @param {string} message - Error explanation message
@@ -35,5 +50,6 @@ const errorResponse = (res, message, statusCode = 500, errors = null) => {
 
 module.exports = {
   successResponse,
-  errorResponse
+  errorResponse,
+  formatResponse
 };

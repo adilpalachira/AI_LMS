@@ -37,7 +37,7 @@ const Sidebar = () => {
       { name: 'AI Quiz Generator', icon: BrainCircuit, path: '/ai-quiz-generator' },
       { name: 'Question Bank', icon: BookOpen, path: '/question-bank' },
     ] : []),
-    { name: 'AI Tutor', icon: BrainCircuit, path: '/ai-tutor' },
+    ...(user?.role === 'Student' ? [{ name: 'AI Tutor', icon: BrainCircuit, path: '/ai-tutor' }] : []),
     ...(user?.role === 'Student' ? [
       { name: 'Personalized Learning', icon: BrainCircuit, path: '/personalized-learning' },
       { name: 'Study Planner', icon: CalendarRange, path: '/study-planner' },

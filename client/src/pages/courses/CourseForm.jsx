@@ -130,10 +130,11 @@ const CourseForm = () => {
     try {
       if (isEditMode) {
         await updateCourse(id, formData);
+        navigate(`/courses/${id}`);
       } else {
         await createCourse(formData);
+        navigate('/manage-courses');
       }
-      navigate('/manage-courses');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save course');
     } finally {

@@ -16,7 +16,13 @@ module.exports = {
   LLM_TEMPERATURE: 0.2,
   MAX_TOKENS: 800,
 
+  // Gemini Model Config
+  GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+  GEMINI_EMBEDDING_MODEL: process.env.GEMINI_EMBEDDING_MODEL || 'gemini-embedding-001',
+
+
   // Pinecone Default Namespace
   PINECONE_INDEX: process.env.PINECONE_INDEX || 'ai-lms-knowledge',
   PINECONE_NAMESPACE: process.env.PINECONE_NAMESPACE || 'course-materials'
 };
+

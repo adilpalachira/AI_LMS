@@ -25,8 +25,11 @@ const queryCourses = async (queryParams, currentUser) => {
     // Public / Students can ONLY see Published courses
     query.status = 'Published';
   } else if (currentUser.role === 'Faculty') {
-    // Faculty sees Published courses OR courses they own/teach unless specific status requested
-    if (status) {
+    // Faculty defaults to seeing ONLY their own taught/created courses
+    if (queryParams.all !== 'true' && queryParams.all !== true && (!instructor || instructor === 'All')) {
+      query.$or = [{ instructor: currentUser._id }, { createdBy: currentUser._id }];
+    }
+    if (status && status !== 'All') {
       query.status = status;
     }
   } else if (currentUser.role === 'Admin') {
@@ -35,6 +38,7 @@ const queryCourses = async (queryParams, currentUser) => {
       query.status = status;
     }
   }
+
 
   // 2. Category Filter (Matches ID or Slug)
   if (category && category !== 'All') {

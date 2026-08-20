@@ -11,7 +11,8 @@ const {
   deleteUser,
   updateUserStatus,
   updateUserRole,
-  resetUserPassword
+  resetUserPassword,
+  getDashboardSummary
 } = require('../controllers/user.controller');
 const { protect } = require('../middlewares/auth.middleware');
 const { authorizeRoles } = require('../middlewares/role.middleware');
@@ -25,10 +26,12 @@ const {
   validateResetUserPassword
 } = require('../validators/user.validator');
 
-// Standard user profile routes
+// Standard user profile & dashboard routes
 router.get('/profile', protect, getProfile);
+router.get('/dashboard-summary', protect, getDashboardSummary);
 router.put('/profile', protect, uploadProfileImage, validateUpdateProfile, updateProfile);
 router.put('/change-password', protect, validateChangePassword, changePassword);
+
 
 // Administrative User Management routes (Admin only)
 router.get('/', protect, authorizeRoles('Admin'), getUsers);

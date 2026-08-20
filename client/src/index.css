@@ -17,19 +17,30 @@
   }
 }
 
-/* Premium SaaS Card Layout */
+/* Premium SaaS Card Layout (Dashboard Theme) */
 .premium-card {
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
   border-radius: 20px;
   padding: 24px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02), 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
 }
 
 .premium-card:hover {
   border-color: #D1D5DB;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+}
+
+/* Form input styling matching Dashboard theme (Monochrome Black & White) */
+.form-input, .premium-input {
+  @apply w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all duration-150 text-sm font-medium shadow-sm;
+}
+
+
+/* Glass panel fallback redefined to crisp light dashboard card style */
+.glass-panel {
+  @apply bg-white border border-slate-200/90 rounded-[24px] shadow-sm;
 }
 
 /* Scrollbars */
@@ -51,7 +62,3 @@
   background: #94A3B8;
 }
 
-/* Custom premium input elements */
-.premium-input {
-  @apply w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-150;
-}

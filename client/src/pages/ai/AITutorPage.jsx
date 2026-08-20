@@ -183,17 +183,28 @@ export default function AITutorPage() {
         selectedCourseId
       );
 
-      const { sessionId, assistantMessage } = res.data || {};
+      // Extract response payload from response data envelope
+      const responseData = res.data || res;
+      const newSessionId = responseData.sessionId;
+      const assistantMsg = responseData.assistantMessage;
+      const serverUserMsg = responseData.userMessage;
 
-      if (sessionId && sessionId !== activeSessionId) {
-        setActiveSessionId(sessionId);
+      if (newSessionId && newSessionId !== activeSessionId) {
+        setActiveSessionId(newSessionId);
+        // Refresh session list so sidebar updates
         fetchSessions(selectedCourseId);
       }
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages(prev => {
+        const filtered = prev.filter(m => m._id !== tempUserMsg._id);
+        return [...filtered, serverUserMsg || tempUserMsg, assistantMsg].filter(Boolean);
+      });
     } catch (err) {
+      console.error('AI Tutor error:', err);
       const errorMsg = err.response?.data?.message || err.message || 'Failed to generate response';
       setError(errorMsg);
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(m => m._id !== tempUserMsg._id));
     } finally {
       setIsLoading(false);
     }
@@ -234,35 +245,36 @@ export default function AITutorPage() {
       ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex font-sans">
+    <div className="h-screen bg-[#F8FAFC] flex font-sans overflow-hidden">
       {/* 260px Fixed Sidebar */}
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Fixed Header */}
         <Header />
 
         {/* AI Tutor Main Workspace */}
-        <main className="flex-1 p-6 md:p-8 max-w-[1600px] w-full mx-auto flex flex-col h-[calc(100vh-80px)] overflow-hidden">
+        <main className="flex-1 p-4 md:p-6 max-w-[1600px] w-full mx-auto flex flex-col min-h-0 overflow-hidden">
           
           {/* TOP HERO BANNER (Dashboard Notion Style) */}
-          <div className="bg-white border border-gray-200/80 rounded-[20px] p-6 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm shrink-0 relative overflow-hidden">
+          <div className="bg-white border border-gray-200/80 rounded-[20px] p-4 md:p-5 mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-sm shrink-0 relative overflow-hidden">
             {/* Background Accent */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50/40 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gray-100/50 rounded-full blur-3xl pointer-events-none"></div>
 
-            <div className="space-y-1 z-10">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
-                <Bot className="w-4 h-4 text-blue-600" />
-                <span>AI Intelligent Learning Assistant</span>
+            <div className="space-y-0.5 z-10">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-blue-600">
+                <Sparkles className="w-4 h-4 text-blue-600" />
+                <span>Google Gemini AI Learning Assistant</span>
               </div>
-              <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
+              <h1 className="text-xl md:text-2xl font-extrabold text-gray-950 tracking-tight">
                 Course AI Tutor & RAG Knowledge Base
               </h1>
-              <p className="text-xs text-gray-400 font-medium">
-                Ask questions grounded in your course materials, lecture notes, and syllabus assignments.
+              <p className="text-xs text-gray-500 font-medium">
+                Ask questions grounded in your course materials, lecture notes, and syllabus assignments using Gemini AI.
               </p>
             </div>
+
 
             <div className="flex flex-wrap items-center gap-3 z-10 w-full md:w-auto">
               <CourseSelector

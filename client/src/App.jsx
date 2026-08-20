@@ -4,6 +4,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleGuard from './components/RoleGuard';
+import FloatingAIChat from './components/ai/FloatingAIChat';
+
 
 // Pages
 import Login from './pages/Login';
@@ -58,9 +60,9 @@ import StudyPlannerPage from './pages/learning/StudyPlannerPage';
 import { useAuth } from './hooks/useAuth';
 
 // Lucide icons for Landing page
-import { Sparkles, BrainCircuit, ShieldAlert, Award, ArrowRight } from 'lucide-react';
+import { Sparkles, BrainCircuit, ShieldAlert, Award, ArrowRight, BookOpen, Clock, Calendar, CheckSquare, Layers, Bot, Zap, CheckCircle } from 'lucide-react';
 
-// Landing Page Sub-component
+// Landing Page Sub-component (Redesigned with Black & White Dashboard Theme)
 const LandingPage = () => {
   const { user } = useAuth();
   
@@ -70,83 +72,181 @@ const LandingPage = () => {
   }
 
   return (
-    <div className="bg-[#F8FAFC] min-h-[90vh]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center space-y-12">
-        {/* Hero Badge */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-100 animate-pulse">
-          <Sparkles size={12} />
-          Empowering Next-Gen Classrooms
+    <div className="bg-[#F8FAFC] min-h-[90vh] font-sans pb-16">
+      {/* Hero Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20 pb-12 text-center space-y-8">
+        
+        {/* Hero Pill Badge */}
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-black text-white shadow-sm animate-pulse">
+          <Sparkles size={14} className="text-white" />
+          <span>Next-Generation AI LMS Platform</span>
         </div>
 
         {/* Main Hero Header */}
-        <div className="space-y-4 max-w-3xl mx-auto">
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-gray-900 tracking-tight leading-none font-display">
+        <div className="space-y-4 max-w-4xl mx-auto">
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-gray-950 tracking-tight leading-[1.1]">
             AI-Powered Learning <br />
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="text-gray-950">
               Management System
             </span>
           </h1>
-          <p className="text-gray-500 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
-            Unlock personalized study paths, intelligent grading pipelines, and interactive AI tutoring tools. Built for Admin control, Faculty ease, and Student success.
+          <p className="text-gray-500 text-base sm:text-xl max-w-2xl mx-auto leading-relaxed font-medium">
+            Unlock personalized study paths, intelligent assessment pipelines, and 24/7 AI tutoring tools in a sleek, Notion-inspired dashboard interface.
           </p>
         </div>
 
         {/* CTAs */}
-        <div className="flex flex-wrap items-center justify-center gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
           <Link
             to="/register"
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-8 rounded-xl transition-all shadow-sm group"
+            className="flex items-center gap-2.5 bg-black hover:bg-slate-800 text-white font-bold py-3.5 px-8 rounded-xl transition-all shadow-sm group text-sm"
           >
             Get Started Free
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link
             to="/login"
-            className="bg-white border border-gray-200 hover:border-gray-300 hover:text-gray-900 text-gray-600 font-semibold py-3.5 px-8 rounded-xl transition-all shadow-sm"
+            className="flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-950 text-gray-900 font-bold py-3.5 px-8 rounded-xl transition-all shadow-sm text-sm"
           >
-            View Demo Portal
+            Sign In to Portal
           </Link>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-12 text-left">
+        {/* Real Live Dashboard Preview Card Container */}
+        <div className="pt-8 max-w-5xl mx-auto">
+          <div className="bg-white border border-gray-200 rounded-[24px] p-4 sm:p-6 shadow-md text-left space-y-4 relative overflow-hidden">
+            {/* Header Mock bar */}
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-gray-300"></div>
+                <div className="h-3 w-3 rounded-full bg-gray-400"></div>
+                <div className="h-3 w-3 rounded-full bg-gray-900"></div>
+                <span className="ml-2 font-bold text-gray-500 text-[11px]">EduAI LMS — Live Dashboard Preview</span>
+              </div>
+              <span className="hidden sm:inline-flex items-center gap-1.5 bg-black text-white font-bold text-[10px] px-2.5 py-0.5 rounded-full">
+                <CheckCircle size={12} /> Active Workspace
+              </span>
+            </div>
+
+            {/* Dashboard Hero Banner Mock */}
+            <div className="bg-black text-white rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+              <div className="space-y-2 max-w-lg">
+                <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">Welcome back, Student</span>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">Today's focus shapes your future.</h2>
+                <p className="text-xs text-gray-300 font-medium">Stay consistent with automated study schedules and instant AI feedback.</p>
+              </div>
+              <Link
+                to="/login"
+                className="shrink-0 bg-white hover:bg-gray-100 text-black font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all shadow-sm"
+              >
+                Launch Dashboard
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            {/* Grid preview elements */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+              {/* Card 1 */}
+              <div className="premium-card space-y-3 !p-5">
+                <div className="flex items-center gap-2 text-gray-500">
+                  <BookOpen size={15} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Today's Topic</span>
+                </div>
+                <p className="text-xs font-bold text-gray-950">DBMS — Unit 2</p>
+                <h4 className="text-sm font-bold text-gray-900">Database Normalization</h4>
+                <p className="text-[11px] text-gray-500 leading-relaxed">Master 1NF, 2NF, 3NF and BCNF relational principles.</p>
+              </div>
+
+              {/* Card 2 */}
+              <div className="premium-card space-y-3 !p-5">
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Bot size={15} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">AI Assistant</span>
+                </div>
+                <p className="text-xs font-bold text-gray-950">24/7 Academic Tutor</p>
+                <h4 className="text-sm font-bold text-gray-900">Instant Explanations</h4>
+                <p className="text-[11px] text-gray-500 leading-relaxed">Ask complex homework questions or code debug requests anytime.</p>
+              </div>
+
+              {/* Card 3 */}
+              <div className="premium-card space-y-3 !p-5">
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Calendar size={15} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Next Exam</span>
+                </div>
+                <p className="text-xs font-bold text-gray-950">15 Days Left</p>
+                <h4 className="text-sm font-bold text-gray-900">DBMS Internal Exam</h4>
+                <p className="text-[11px] text-gray-500 leading-relaxed">28 June 2025 • Room 301</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Feature Highlights Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-12 text-left max-w-7xl mx-auto">
           {/* Card 1 */}
-          <div className="bg-white border border-gray-200 p-8 rounded-3xl space-y-4 shadow-sm">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl w-fit border border-blue-100">
+          <div className="premium-card p-8 space-y-4">
+            <div className="p-3 bg-gray-100 text-gray-950 rounded-2xl w-fit border border-gray-200">
               <BrainCircuit size={24} />
             </div>
-            <h3 className="text-lg font-bold text-gray-900">AI-Powered Tutoring</h3>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Get instant responses, lecture notes summaries, and personalized revision quizzes dynamically synthesized by intelligent chat assist.
+            <h3 className="text-lg font-bold text-gray-950">AI-Powered Tutoring</h3>
+            <p className="text-sm text-gray-500 leading-relaxed font-medium">
+              Get instant responses, lecture summaries, and personalized study paths dynamically synthesized by intelligent chat assist.
             </p>
           </div>
 
           {/* Card 2 */}
-          <div className="bg-white border border-gray-200/80 p-8 rounded-3xl space-y-4 shadow-sm">
-            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl w-fit border border-indigo-100">
+          <div className="premium-card p-8 space-y-4">
+            <div className="p-3 bg-gray-100 text-gray-950 rounded-2xl w-fit border border-gray-200">
               <Award size={24} />
             </div>
-            <h3 className="text-lg font-bold text-gray-900">Automated Grading</h3>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Faculty members can run code snippets, score essays, and verify assignments instantly using unified grading structures.
+            <h3 className="text-lg font-bold text-gray-950">Automated Assessment</h3>
+            <p className="text-sm text-gray-500 leading-relaxed font-medium">
+              Faculty members can run code snippets, generate quiz banks, and score assignments using unified grading structures.
             </p>
           </div>
 
           {/* Card 3 */}
-          <div className="bg-white border border-gray-200 p-8 rounded-3xl space-y-4 shadow-sm">
-            <div className="p-3 bg-rose-50 text-rose-600 rounded-2xl w-fit border border-rose-100">
+          <div className="premium-card p-8 space-y-4">
+            <div className="p-3 bg-gray-100 text-gray-950 rounded-2xl w-fit border border-gray-200">
               <ShieldAlert size={24} />
             </div>
-            <h3 className="text-lg font-bold text-gray-900">Role-based Access</h3>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Distinct dashboard panels designed to keep Admin oversight, Faculty control, and Student spaces securely divided via JWT.
+            <h3 className="text-lg font-bold text-gray-950">Role-Based Access</h3>
+            <p className="text-sm text-gray-500 leading-relaxed font-medium">
+              Tailored dashboards designed to keep Admin oversight, Faculty course control, and Student progress clean and divided.
             </p>
           </div>
         </div>
+
+        {/* Metric Stats Banner */}
+        <div className="pt-8 max-w-5xl mx-auto">
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 shadow-sm text-center">
+            <div className="space-y-1">
+              <p className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">100%</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">AI Integrated</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">24/7</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Tutor Availability</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">3 Roles</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Student, Faculty, Admin</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">0 ms</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Instant Feedback</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
 };
+
+
 
 // Sub-component wrapper to access useLocation hook
 const AppContent = () => {
@@ -482,9 +582,11 @@ const AppContent = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+      <FloatingAIChat />
     </div>
   );
 };
+
 
 // Main Routing App wrapper
 function App() {

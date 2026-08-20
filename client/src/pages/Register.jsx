@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Eye, EyeOff, Lock, Mail, User as UserIcon, Phone, GraduationCap, ArrowRight, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, User as UserIcon, Phone, GraduationCap, ArrowRight, AlertCircle, Sparkles, ShieldCheck } from 'lucide-react';
 
 const Register = () => {
   const { register, user } = useAuth();
@@ -75,38 +75,76 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-      <div className="glass-panel max-w-lg w-full space-y-8 p-8 sm:p-10 rounded-3xl relative overflow-hidden shadow-2xl">
-        {/* Decorative Glow */}
-        <div className="absolute -top-10 -left-10 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl"></div>
-        <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+    <div className="min-h-[90vh] bg-[#F8FAFC] flex flex-col justify-center items-center px-4 py-12 font-sans relative overflow-hidden">
 
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">
-            Student Registration
-          </h2>
-          <p className="mt-2 text-sm text-slate-400">
-            Create your student account to access courses and AI features
+      <div className="max-w-lg w-full space-y-6">
+        {/* Brand Header */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-black text-white shadow-sm mb-1">
+            <Sparkles size={13} className="text-white animate-pulse" />
+            EduAI LMS Platform
+          </div>
+          <h1 className="text-3xl font-extrabold text-gray-950 tracking-tight">
+            Create Your Account
+          </h1>
+          <p className="text-sm text-gray-500 font-medium">
+            Join EduAI LMS to access personalized study paths and AI tools
           </p>
         </div>
 
-        {formError && (
-          <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-2xl text-sm animate-shake">
-            <AlertCircle size={18} className="shrink-0" />
-            <span>{formError}</span>
-          </div>
-        )}
+        {/* Dashboard Card Container */}
+        <div className="bg-white border border-gray-200/90 rounded-[24px] p-8 sm:p-10 shadow-sm relative overflow-hidden space-y-6">
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit} autoComplete="off">
+          {/* Form Error Banner */}
+          {formError && (
+            <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl text-xs font-semibold animate-shake">
+              <AlertCircle size={18} className="shrink-0 text-red-600" />
+              <span>{formError}</span>
+            </div>
+          )}
 
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
+            
+            {/* Account Role Selector */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
+                Account Type
+              </label>
+              <div className="grid grid-cols-2 gap-2 p-1.5 bg-gray-100 border border-gray-200 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setRole('Student')}
+                  className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                    role === 'Student'
+                      ? 'bg-black text-white shadow-sm'
+                      : 'text-gray-600 hover:text-gray-950 font-medium'
+                  }`}
+                >
+                  <GraduationCap size={15} />
+                  Student
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole('Faculty')}
+                  className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                    role === 'Faculty'
+                      ? 'bg-black text-white shadow-sm'
+                      : 'text-gray-600 hover:text-gray-950 font-medium'
+                  }`}
+                >
+                  <ShieldCheck size={15} />
+                  Faculty
+                </button>
+              </div>
+            </div>
+
             {/* Full Name */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Full Name <span className="text-red-400">*</span>
+            <div className="space-y-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
+                Full Name <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <UserIcon size={18} />
                 </div>
                 <input
@@ -114,22 +152,22 @@ const Register = () => {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className={`form-input pl-10 ${getFieldError('name') ? 'border-red-500 focus:ring-red-500/30' : ''}`}
+                  className={`w-full bg-white border ${getFieldError('name') ? 'border-red-500 focus:ring-red-500/10' : 'border-gray-200 focus:border-black focus:ring-black/10'} focus:ring-2 rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all shadow-sm`}
                   placeholder="John Doe"
                 />
               </div>
               {getFieldError('name') && (
-                <p className="text-xs text-red-400 mt-1">{getFieldError('name')}</p>
+                <p className="text-xs text-red-600 font-medium">{getFieldError('name')}</p>
               )}
             </div>
 
             {/* Email Address */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Email Address <span className="text-red-400">*</span>
+            <div className="space-y-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
+                Email Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Mail size={18} />
                 </div>
                 <input
@@ -137,44 +175,44 @@ const Register = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`form-input pl-10 ${getFieldError('email') ? 'border-red-500 focus:ring-red-500/30' : ''}`}
+                  className={`w-full bg-white border ${getFieldError('email') ? 'border-red-500 focus:ring-red-500/10' : 'border-gray-200 focus:border-black focus:ring-black/10'} focus:ring-2 rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all shadow-sm`}
                   placeholder="johndoe@university.edu"
                 />
               </div>
               {getFieldError('email') && (
-                <p className="text-xs text-red-400 mt-1">{getFieldError('email')}</p>
+                <p className="text-xs text-red-600 font-medium">{getFieldError('email')}</p>
               )}
             </div>
 
             {/* Phone Number (Optional) */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+            <div className="space-y-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
                 Phone Number (Optional)
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Phone size={18} />
                 </div>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className={`form-input pl-10 ${getFieldError('phone') ? 'border-red-500 focus:ring-red-500/30' : ''}`}
+                  className={`w-full bg-white border ${getFieldError('phone') ? 'border-red-500 focus:ring-red-500/10' : 'border-gray-200 focus:border-black focus:ring-black/10'} focus:ring-2 rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all shadow-sm`}
                   placeholder="+1234567890"
                 />
               </div>
               {getFieldError('phone') && (
-                <p className="text-xs text-red-400 mt-1">{getFieldError('phone')}</p>
+                <p className="text-xs text-red-600 font-medium">{getFieldError('phone')}</p>
               )}
             </div>
 
             {/* Password */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Password <span className="text-red-400">*</span>
+            <div className="space-y-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
+                Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Lock size={18} />
                 </div>
                 <input
@@ -182,29 +220,29 @@ const Register = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`form-input pl-10 pr-10 ${getFieldError('password') ? 'border-red-500 focus:ring-red-500/30' : ''}`}
-                  placeholder="Min. 8 characters with upper, number, symbol"
+                  className={`w-full bg-white border ${getFieldError('password') ? 'border-red-500 focus:ring-red-500/10' : 'border-gray-200 focus:border-black focus:ring-black/10'} focus:ring-2 rounded-xl pl-10 pr-10 py-2.5 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all shadow-sm`}
+                  placeholder="Min. 8 characters"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {getFieldError('password') && (
-                <p className="text-xs text-red-400 mt-1">{getFieldError('password')}</p>
+                <p className="text-xs text-red-600 font-medium">{getFieldError('password')}</p>
               )}
             </div>
 
             {/* Confirm Password */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Confirm Password <span className="text-red-400">*</span>
+            <div className="space-y-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
+                Confirm Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Lock size={18} />
                 </div>
                 <input
@@ -212,44 +250,45 @@ const Register = () => {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={`form-input pl-10 pr-10 ${getFieldError('confirmPassword') ? 'border-red-500 focus:ring-red-500/30' : ''}`}
+                  className={`w-full bg-white border ${getFieldError('confirmPassword') ? 'border-red-500 focus:ring-red-500/10' : 'border-gray-200 focus:border-black focus:ring-black/10'} focus:ring-2 rounded-xl pl-10 pr-10 py-2.5 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all shadow-sm`}
                   placeholder="Confirm password"
                 />
               </div>
               {getFieldError('confirmPassword') && (
-                <p className="text-xs text-red-400 mt-1">{getFieldError('confirmPassword')}</p>
+                <p className="text-xs text-red-600 font-medium">{getFieldError('confirmPassword')}</p>
               )}
             </div>
-          </div>
 
-          <div>
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-brand-600 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-950/20 transition-all duration-200"
+              className="w-full bg-black hover:bg-slate-800 active:bg-slate-900 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-sm hover:shadow flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-4"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <>
-                  Register
-                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                  Complete Registration
+                  <ArrowRight size={16} />
                 </>
               )}
             </button>
-          </div>
-        </form>
+          </form>
 
-        <div className="text-center mt-4">
-          <p className="text-sm text-slate-400">
-            Already registered?{' '}
-            <Link
-              to="/login"
-              className="font-semibold text-brand-400 hover:text-brand-300 transition-colors"
-            >
-              Sign in here
-            </Link>
-          </p>
+          {/* Footer Link */}
+          <div className="text-center pt-3 border-t border-gray-100">
+            <p className="text-xs text-gray-500 font-medium">
+              Already registered?{' '}
+              <Link
+                to="/login"
+                className="font-bold text-gray-950 hover:text-black transition-colors underline"
+              >
+                Sign in to your account
+              </Link>
+            </p>
+          </div>
+
         </div>
       </div>
     </div>
@@ -257,3 +296,5 @@ const Register = () => {
 };
 
 export default Register;
+
+

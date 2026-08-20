@@ -30,12 +30,12 @@ const Navbar = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center gap-2 text-lg font-bold tracking-tight text-gray-950">
+            <Link to="/" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-gray-950">
               <span className="flex items-center gap-2">
-                <span className="h-7 w-7 bg-blue-600 rounded-lg flex items-center justify-center text-white text-sm font-bold select-none">
+                <span className="h-7 w-7 bg-black rounded-lg flex items-center justify-center text-white text-sm font-bold select-none shadow-sm">
                   ⚡
                 </span>
-                <span className="bg-gradient-to-r from-gray-900 to-gray-800 bg-clip-text text-transparent">
+                <span className="text-gray-950 font-extrabold">
                   EduAI LMS
                 </span>
               </span>
@@ -94,7 +94,7 @@ const Navbar = () => {
                       onClick={() => setDropdownOpen(!dropdownOpen)}
                       className="flex items-center gap-2.5 focus:outline-none"
                     >
-                      <div className="h-8 w-8 rounded-full bg-blue-600/10 border border-blue-600/20 flex items-center justify-center text-blue-600 overflow-hidden text-xs font-semibold">
+                      <div className="h-8 w-8 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center text-gray-900 overflow-hidden text-xs font-bold">
                         {getAvatar() ? (
                           <img
                             src={getAvatar()}
@@ -119,7 +119,7 @@ const Navbar = () => {
                         <div className="px-3 py-2 border-b border-gray-100 mb-1">
                           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Signed in as</p>
                           <p className="text-xs font-bold text-gray-900 truncate mt-0.5">{user.name}</p>
-                          <span className="inline-flex mt-1 items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">
+                          <span className="inline-flex mt-1 items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-900 border border-gray-200">
                             {user.role}
                           </span>
                         </div>
@@ -148,13 +148,13 @@ const Navbar = () => {
                 <div className="flex items-center gap-4">
                   <Link
                     to="/login"
-                    className="text-gray-600 hover:text-gray-950 text-xs font-semibold transition-colors"
+                    className="text-gray-600 hover:text-gray-950 text-xs font-bold transition-colors"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/register"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-all"
+                    className="bg-black hover:bg-slate-800 text-white px-4.5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all"
                   >
                     Register
                   </Link>
@@ -181,7 +181,7 @@ const Navbar = () => {
           {user ? (
             <>
               <div className="flex items-center gap-3 px-3 py-3 border-b border-gray-150 mb-2">
-                <div className="h-9 w-9 rounded-full bg-blue-600/10 border border-blue-600/20 flex items-center justify-center text-blue-600 font-bold overflow-hidden">
+                <div className="h-9 w-9 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center text-gray-900 font-bold overflow-hidden">
                   {getAvatar() ? (
                     <img src={getAvatar()} alt={user.name} className="h-full w-full object-cover" />
                   ) : (
@@ -228,7 +228,7 @@ const Navbar = () => {
               <Link
                 to="/register"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all"
+                className="block text-center bg-black hover:bg-slate-800 text-white px-3 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all"
               >
                 Register
               </Link>
@@ -241,3 +241,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

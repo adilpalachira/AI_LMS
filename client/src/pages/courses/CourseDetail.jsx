@@ -7,7 +7,7 @@ import SectionCard from '../../components/content/SectionCard';
 import { useAuth } from '../../hooks/useAuth';
 import {
   BookOpen, Clock, Users, Globe, Award, CheckCircle, ArrowLeft,
-  Check, AlertCircle, PlayCircle, ShieldCheck, Layers, Settings, Plus
+  Check, AlertCircle, PlayCircle, ShieldCheck, Layers, Settings, Plus, Edit2
 } from 'lucide-react';
 
 const CourseDetail = () => {
@@ -198,14 +198,24 @@ const CourseDetail = () => {
                   Logged in as <span className="font-bold text-gray-900">{user?.role || 'Guest'}</span>
                 </div>
                 {['Admin', 'Faculty'].includes(user?.role) && (
-                  <Link
-                    to={`/courses/${course._id}/manage-content`}
-                    className="w-full py-3 px-4 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 transition-all shadow-xs"
-                  >
-                    <Settings size={15} />
-                    Manage Course Content
-                  </Link>
+                  <div className="space-y-2">
+                    <Link
+                      to={`/courses/${course._id}/edit`}
+                      className="w-full py-3 px-4 text-xs font-bold rounded-xl bg-slate-900 hover:bg-black text-white flex items-center justify-center gap-2 transition-all shadow-xs"
+                    >
+                      <Edit2 size={15} />
+                      Edit Course Details
+                    </Link>
+                    <Link
+                      to={`/courses/${course._id}/manage-content`}
+                      className="w-full py-3 px-4 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 transition-all shadow-xs"
+                    >
+                      <Settings size={15} />
+                      Manage Course Content
+                    </Link>
+                  </div>
                 )}
+
               </div>
             )}
 

@@ -1,0 +1,74 @@
+\chapter{Introduction}
+
+Modern higher education increasingly relies on digital platforms and Learning Management Systems (LMS) to deliver course content, manage assignments, and facilitate student-faculty communication. However, traditional LMS platforms primarily function as static document repositories. Students are forced to passively navigate large volumes of unstructured course materials, lecture notes, and PDFs without real-time academic guidance or personalized study support. When students encounter difficulty understanding complex topics, they often lack 24/7 assistance outside of scheduled classroom hours or faculty office hours. Furthermore, static platforms offer no mechanism for monitoring student topic retention or dynamically constructing personalized study schedules based on individual learning paces.
+
+On the institutional side, instructors and faculty members face significant administrative overhead. Creating comprehensive assessments, homework assignments, and timed quizzes aligned with Bloom's taxonomy requires hours of manual drafting. When public generative AI tools are used independently by students, they introduce risks of factual hallucinations, lack institutional context, and fail to provide verifiable source citations grounded in actual course syllabi.
+
+To address these core challenges, this project proposes \textbf{AI-LMS}, an intelligent, web-based Learning Management System designed to transform passive digital education into an interactive, grounded, and adaptive learning ecosystem. AI-LMS integrates Retrieval-Augmented Generation (\textbf{RAG}), performance telemetry tracking, and automated question generation into a full-stack MERN application.
+
+The system features a 24/7 grounded RAG AI tutor that ingests uploaded course PDFs, indexes document text using high-dimensional dense vector embeddings, and delivers precise, context-aware answers complete with exact page-level citations. Additionally, AI-LMS incorporates an adaptive study planner that analyzes student quiz accuracy telemetry to identify weak knowledge areas and automatically build dynamic study calendars. For faculty, the platform provides an AI-powered assessment tool that rapidly converts course lecture materials into structured quiz question banks.
+
+The frontend is developed using \textbf{React 18} with \textbf{Vite} and \textbf{Tailwind CSS}, providing a responsive and modern user experience, with \textbf{React Router} managing client-side navigation and protected routes. The backend is built with \textbf{Node.js} and \textbf{Express.js}, implementing 14 modular route controllers secured via JSON Web Tokens (\textbf{JWT}) and \textbf{Bcrypt} for role-based access control (\textbf{RBAC}) across System Admins, Faculty, and Students. Persistent data storage is managed via \textbf{MongoDB Atlas}, while semantic vector search is driven by \textbf{Pinecone} Vector DB, \textbf{LangChain}, and \textbf{OpenAI} (\texttt{gpt-4o-mini} and \texttt{text-embedding-3-small}).
+
+\section{Scope}
+
+The scope of AI-LMS is to provide a comprehensive, intelligent digital ecosystem that unifies course management, AI-assisted tutoring, automated assessment generation, and personalized study planning within a single secure web platform. The system eliminates the fragmentation of educational tools by providing role-tailored environments for Students, Faculty, and Administrators.
+
+The primary scope of user governance includes multi-role authentication and authorization. Each user registers under a dedicated role—System Admin, Faculty Instructor, or Student—which dictates access permissions across the system. JSON Web Tokens are used to enforce security boundaries across all 14 API route modules, ensuring that student performance data, faculty question banks, and course administration functions remain strictly isolated and protected.
+
+The core educational scope encompasses three main intelligent modules:
+\begin{enumerate}
+    \item \textbf{Grounded RAG AI Tutor:} Instructors upload PDF lecture notes which are processed by LangChain text splitters and indexed into Pinecone. Students query the AI Tutor within any enrolled course to receive instant, hallucination-free explanations backed by verifiable PDF page citations.
+    \item \textbf{Adaptive Study Planner \& Telemetry Engine:} The system tracks student quiz performance, calculates topic mastery, flags weak areas (accuracy $<60\%$), and dynamically generates personalized study tasks and calendar schedules.
+    \item \textbf{Automated Quiz Generator:} Faculty members can generate Bloom's taxonomy-aligned multiple-choice question banks directly from uploaded course documents in seconds.
+\end{enumerate}
+
+The architecture of AI-LMS is designed to be modular and scalable. Future developments can expand the system scope to include Server-Sent Events (\textbf{SSE}) real-time token streaming for instant AI perception, WebSockets for live student-faculty discussions, multi-modal video transcript search, and iCal calendar export capabilities.
+
+\section{Relevance}
+
+The relevance of AI-LMS stems from the rapidly evolving demand for personalized, AI-driven educational technology that maintains strict factual grounding and academic integrity. Conventional LMS solutions fail to provide interactive assistance, leading to low student engagement and delayed query resolution in large classroom environments with high student-to-instructor ratios.
+
+AI-LMS directly addresses the educational "2 Sigma Problem" identified by Benjamin Bloom, which established that one-to-one tutoring elevates student performance by two standard deviations over traditional classroom instruction. By providing an instant, 24/7 AI tutor grounded in verifiable course materials, AI-LMS democratizes personalized tutoring for every enrolled student.
+
+From a software engineering perspective, AI-LMS integrates contemporary full-stack web development methodologies with cutting-edge vector search and generative AI pipelines. The project demonstrates the practical application of component-driven React design, RESTful API architecture, MongoDB Mongoose schema modeling, Pinecone vector indexing, LangChain document chunking, and prompt engineering.
+
+Furthermore, AI-LMS drastically reduces faculty administrative burden by automating time-consuming quiz creation, allowing instructors to focus more on direct student mentoring and curriculum improvement.
+
+\section{Problem Statement}
+
+Existing Learning Management Systems function primarily as static content repositories, lacking real-time academic assistance, personalized study tracking, and automated assessment tools. As a result, students face passive learning environments, unresolved queries outside class hours, and difficulty identifying knowledge gaps, while faculty members incur high administrative workloads manually drafting quizzes and question banks. Generic AI chatbots fail to solve this problem due to factual hallucinations, lack of institutional syllabus grounding, and absence of verifiable citations.
+
+The problem addressed by this project is the absence of an integrated, secure, and grounded educational platform that provides instant 24/7 course-specific AI tutoring, automated weak-topic telemetry tracking, dynamic study planning, and AI-assisted quiz generation within a unified full-stack ecosystem.
+
+\section{Objectives}
+
+The primary objective of AI-LMS is to design, develop, and deploy an intelligent, full-stack learning management system that combines Retrieval-Augmented Generation, performance telemetry, and automated quiz creation.
+
+The specific technical and system objectives of the project are:
+
+\begin{enumerate}
+    \item To build a responsive, modern web interface using React 18, Vite, and Tailwind CSS for Students, Faculty, and Administrators.
+    \item To implement secure user registration and multi-role authorization using JWT token rotation and Bcrypt password hashing.
+    \item To establish a Retrieval-Augmented Generation (RAG) pipeline using LangChain, Pinecone Vector DB, and OpenAI embeddings for grounded PDF query resolution.
+    \item To guarantee zero factual hallucinations by providing verifiable document title and page number citations for every AI Tutor response.
+    \item To develop a performance telemetry engine that evaluates quiz accuracy, detects weak knowledge topics, and dynamically generates personalized study calendars.
+    \item To implement an AI-powered quiz generator allowing faculty to synthesize Bloom's taxonomy-aligned assessments from course PDFs.
+    \item To provide complete course and document management functionality, allowing instructors to organize sections, lessons, videos, and PDF materials.
+    \item To establish a modular RESTful backend architecture with 14 route controllers and 16 Mongoose data schemas, serving as a foundation for future extensions like SSE streaming and WebSockets.
+\end{enumerate}
+
+\newpage
+\section{Organisation of the Report}
+
+This report is organised into five comprehensive chapters detailing the complete design, analysis, and implementation of the AI-LMS system:
+
+\textbf{Chapter 1: Introduction} introduces the AI-LMS platform, detailing the background, scope, institutional relevance, problem statement, core engineering objectives, and report organization.
+
+\textbf{Chapter 2: System Study} presents a detailed literature review of RAG architectures and adaptive learning models, comparative analysis of existing LMS platforms versus the proposed system, gap identification, and software/hardware requirements.
+
+\textbf{Chapter 3: Development Methodology} discusses the Agile Scrum methodology adopted during project execution, outlining the sprint timeline, phase breakdown, ceremonies, and feature integration pipeline.
+
+\textbf{Chapter 4: System Design} describes the multi-tier architecture, system block diagrams, Level 0 and Level 1 Data Flow Diagrams (DFD), RAG sequence diagrams, database Entity-Relationship (ER) schemas, and user interface design.
+
+\textbf{Chapter 5: Implementation \& Testing} details the full-stack development environment, backend REST API routes, RAG ingestion implementation, telemetry algorithms, frontend state management, test suites, and evaluation results.

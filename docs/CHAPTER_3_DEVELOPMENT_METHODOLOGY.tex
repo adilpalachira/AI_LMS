@@ -1,0 +1,203 @@
+\chapter{Development Methodology}
+
+\section{Introduction}
+
+The development methodology defines the structured approach followed for planning, developing, testing, and refining the \textbf{AI-LMS} platform. Because an intelligent learning system combining Retrieval-Augmented Generation (\textbf{RAG}), vector indexing, and adaptive telemetry involves interdependent components, an iterative methodology was selected over a strictly sequential waterfall model.
+
+AI-LMS was developed using an Agile software development framework with Scrum-inspired practices. The project was broken down into manageable functional modules, with each module focusing on a specific set of features—such as multi-role authentication, vector store ingestion, quiz telemetry, and dynamic study planning. Functionality was implemented incrementally, accompanied by continuous API validation and UI workflow testing.
+
+This methodology provided a disciplined management structure while offering the flexibility to resolve complex AI integration issues, prompt tuning requirements, and database schema adjustments as they arose.
+
+\section{Agile Development}
+
+Agile software development is an iterative approach in which software is developed through repeated cycles of planning, execution, testing, and refinement. Rather than attempting to implement the entire system in a single monolithic phase, the project is divided into smaller, self-contained functional units.
+
+The Agile approach is especially suitable for AI-driven platforms like AI-LMS, where system capabilities depend on underlying services. For example, JWT authentication and role-based access control (\textbf{RBAC}) had to be established before protecting REST endpoints. Similarly, RAG query pipelines depended on PDF parsing, LangChain text chunking, and Pinecone vector store indexing.
+
+The core Agile principles applied during the development of AI-LMS were:
+
+\begin{itemize}
+    \item Incremental implementation of core LMS and AI capabilities.
+    \item Continuous integration and endpoint validation throughout development.
+    \item Early detection and resolution of vector search and prompt formatting errors.
+    \item Separation of system architecture into decoupled frontend, backend, and AI vector layers.
+    \item Refinement of system response latency based on empirical testing.
+\end{itemize}
+
+\section{Scrum Framework}
+
+Scrum is an Agile framework that organizes software engineering activities into short, time-boxed development cycles known as sprints. Each sprint focuses on delivering a specific set of features from the product backlog.
+
+While AI-LMS is an academic engineering project, applying core Scrum ceremonies provided a clear schedule and milestone structure. The primary Scrum concepts utilized include:
+
+\begin{itemize}
+    \item \textbf{Product Backlog:} A prioritized list of all functional, technical, and security requirements needed for AI-LMS.
+    
+    \item \textbf{Sprint:} A two-week development iteration during which selected backlog items are implemented, tested, and integrated.
+    
+    \item \textbf{Sprint Planning:} Definition of sprint goals, task selection, and technical dependency mapping.
+    
+    \item \textbf{Sprint Review:} Functional verification of implemented REST API endpoints, vector search accuracy, and React UI components.
+    
+    \item \textbf{Retrospective:} Technical reflection on integration challenges, API rate limits, database index optimizations, and security configurations.
+\end{itemize}
+
+\section{Product Backlog}
+
+The product backlog for AI-LMS was established by analyzing institutional requirements and categorizing them into engineering tasks. The initial prioritized backlog comprised:
+
+\begin{enumerate}
+    \item Project environment setup (React 18, Vite, Tailwind CSS, Node.js, Express.js).
+    \item MongoDB Atlas database configuration and Mongoose schema definitions.
+    \item User registration and password hashing using BcryptJS.
+    \item JSON Web Token (JWT) multi-role authentication (Admin, Faculty, Student).
+    \item Protected route guards on frontend (React Router) and backend middleware.
+    \item Course management and section/lesson hierarchy builder.
+    \item PDF course material upload and storage pipeline.
+    \item LangChain document extraction and recursive text chunking.
+    \item OpenAI embedding generation (\texttt{text-embedding-3-small}) and Pinecone indexing.
+    \item RAG AI Tutor chat interface with exact PDF page citations.
+    \item Timed quiz execution engine and telemetry scoring pipeline.
+    \item Weak-topic calculation algorithm ($<60\%$ accuracy detection).
+    \item Personalized AI Study Planner and dynamic calendar interface.
+\end{enumerate}
+
+\section{Sprint Planning}
+
+Sprint planning involved selecting dependent tasks from the product backlog and organizing them into sequential sprints. Initial sprints focused on establishing core MERN infrastructure and security guards. Intermediate sprints implemented content management, vector processing, and AI RAG pipelines. Final sprints delivered weak-topic telemetry and study calendar visualization.
+
+The iterative development workflow is rendered using inline TikZ diagram code in Figure~\ref{fig:agileprocess}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.0cm,
+    block/.style={
+        draw,
+        align=center,
+        minimum width=5.5cm,
+        minimum height=0.8cm,
+        font=\small,
+        thick
+    },
+    arrow/.style={->, >=stealth, thick}
+]
+
+\node (planning) [block] {1. Identify Requirements \& Create Backlog};
+\node (sprint) [block, below=of planning] {2. Select Tasks for Sprint};
+\node (development) [block, below=of sprint] {3. Implement Selected Features};
+\node (testing) [block, below=of development] {4. Test and Identify Issues};
+\node (review) [block, below=of testing] {5. Review and Refine};
+\node (next) [block, below=of review] {6. Select Next Development Tasks};
+
+\draw[arrow] (planning) -- (sprint);
+\draw[arrow] (sprint) -- (development);
+\draw[arrow] (development) -- (testing);
+\draw[arrow] (testing) -- (review);
+\draw[arrow] (review) -- (next);
+
+\draw[arrow] (next.east) -- ++(1.5,0) |- (sprint.east);
+
+\end{tikzpicture}
+\caption{Iterative Development Process for AI-LMS}
+\label{fig:agileprocess}
+\end{figure}
+
+\section{Sprint Execution}
+
+During sprint execution, selected backlog items were implemented and tested iteratively. Development progressed from foundational infrastructure to complex AI vector pipelines.
+
+Initial sprints established the React frontend with Vite, Tailwind CSS styling, Express.js server, and MongoDB connection. Next, JWT authentication and Bcrypt hashing were implemented alongside role authorization middleware.
+
+Subsequent sprints delivered course management and PDF document ingestion. LangChain text splitters broke lecture PDFs into 1000-character chunks with 200-character overlaps, generating 1536-dimensional embeddings upserted into Pinecone.
+
+In the final execution phase, the AI Tutor chat interface was connected to Pinecone vector search and OpenAI \texttt{gpt-4o-mini}. The quiz engine was linked to the weak-topic telemetry service, automatically feeding accuracy metrics into the AI study plan task generator.
+
+\section{Development Stages}
+
+The development of AI-LMS was completed across seven major stages:
+
+\subsection{Stage 1: Project Setup}
+Established the repository structure (`/client` and `/server`), configured Vite build tools, Tailwind CSS design tokens, Express.js route structure, and environment variable management.
+
+\subsection{Stage 2: Database \& Schema Modeling}
+Configured MongoDB Atlas using Mongoose ODM, creating 16 structured data schemas including Users, Courses, Sections, Lessons, Materials, Quizzes, Questions, Attempts, and Study Plans.
+
+\subsection{Stage 3: Multi-Role Authentication}
+Implemented user registration, login, JWT token issue/refresh pipelines, and role-based protection middleware (`protect`, `authorize('admin', 'faculty')`).
+
+\subsection{Stage 4: Course \& Material Management}
+Developed faculty interfaces for building courses, adding video links, uploading PDF lecture notes, and managing student enrollments.
+
+\subsection{Stage 5: RAG Subsystem \& Vector Indexing}
+Integrated PDF-Parse, LangChain `RecursiveCharacterTextSplitter`, OpenAI embedding API, and Pinecone Vector DB indexing with course-level metadata filtering.
+
+The database and vector store hierarchy follows the structure:
+
+\begin{verbatim}
+MongoDB (Core Data)          Pinecone Vector DB (Embeddings)
+ |                            |
+ +-- courses                  +-- {courseId} (Metadata Index)
+      |                            |
+      +-- lessons / materials      +-- vector_chunks {1536-dim}
+           |                            |
+           +-- PDF Documents            +-- text, pageNumber, fileTitle
+\end{verbatim}
+
+\subsection{Stage 6: Telemetry \& AI Study Planner}
+Implemented quiz attempt evaluation, weak-topic identification logic ($<60\%$ accuracy threshold), AI prompt synthesis for study tasks, and calendar rendering.
+
+\subsection{Stage 7: Testing, Security \& Refinement}
+Executed API route validation using HTTP test clients, verified JWT security boundaries, optimized Pinecone query latency, and unified UI styling.
+
+\section{Sprint Review}
+
+At the end of each sprint, implemented features were functionally reviewed. The review process involved end-to-end user workflow testing across all three user roles.
+
+For example, after Sprint 3, PDF ingestion was tested by uploading multi-page lecture notes, executing vector searches in Pinecone, and verifying that the AI Tutor rendered answers with accurate document title and page number badges.
+
+\section{Retrospective and Refinement}
+
+Retrospective evaluation enabled the early identification and resolution of technical bottlenecks.
+
+During RAG pipeline testing, an initial issue occurred where Pinecone returned search results across all courses rather than restricting vectors to the student's active course. During retrospective analysis, the vector query logic was refined to pass exact `{ courseId }` metadata filters, ensuring isolated, course-specific query resolution.
+
+\section{Methodology Applied to AI-LMS}
+
+The overall development progression applied to AI-LMS is summarized below:
+
+\begin{enumerate}
+    \item Define system requirements, user roles, and AI architectural scope.
+    \item Setup React 18, Vite, Node.js, Express.js, and MongoDB environment.
+    \item Implement multi-role JWT authentication and password encryption.
+    \item Build course management, section/lesson hierarchy, and PDF upload.
+    \item Integrate LangChain text chunking, OpenAI embeddings, and Pinecone vector store.
+    \item Build grounded RAG AI Tutor chat interface with PDF page citations.
+    \item Develop timed quiz engine, automated scoring, and telemetry storage.
+    \item Implement weak-topic telemetry algorithm ($<60\%$ accuracy detection).
+    \item Build AI Study Planner task generator and calendar interface.
+    \item Build faculty AI Quiz Generator using OpenAI prompt engineering.
+    \item Conduct end-to-end testing, security audits, and UI refinement.
+\end{enumerate}
+
+\section{Advantages of the Selected Methodology}
+
+The Agile Scrum approach provided significant engineering benefits:
+
+\begin{itemize}
+    \item \textbf{Incremental AI Integration:} Enabled vector database and LLM pipelines to be integrated step-by-step onto a stable REST API foundation.
+    
+    \item \textbf{Early Latency Optimization:} Allowed vector retrieval response times to be benchmarked and tuned during development.
+    
+    \item \textbf{Flexible Requirement Tuning:} Permitted prompt templates and telemetry thresholds to be adjusted based on testing.
+    
+    \item \textbf{Enhanced System Security:} Ensured JWT security rules were audited iteratively across all 14 API route modules.
+\end{itemize}
+
+\section{Limitations of the Methodology}
+
+While effective, applying Scrum in an academic single-developer context lacks full commercial ceremonies—such as separate Product Owners, dedicated Scrum Masters, and formal daily standups. However, the core principles of iterative execution, backlog prioritization, and continuous quality assurance were strictly maintained.
+
+\section{Chapter Summary}
+
+This chapter detailed the Agile Scrum development methodology applied to AI-LMS. By organizing implementation into iterative sprints across seven major development stages, the project successfully delivered a robust full-stack MERN platform integrated with Pinecone vector search and OpenAI services. The resulting system architecture and design specifications are presented in Chapter 4.

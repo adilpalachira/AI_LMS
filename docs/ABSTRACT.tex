@@ -1,0 +1,21 @@
+\newpage
+\thispagestyle{empty}
+
+\begin{center}
+{\Large\textbf{ABSTRACT}}
+\end{center}
+
+\vspace{1cm}
+
+Traditional Learning Management Systems (LMS) act primarily as static document repositories, lacking real-time academic guidance for students and placing heavy manual assessment creation loads on faculty. To address these challenges, this project proposes \textbf{AI-LMS}, an intelligent full-stack learning platform that integrates Retrieval-Augmented Generation (\textbf{RAG}), performance telemetry analytics, and automated quiz generation into a unified educational ecosystem.
+
+AI-LMS provides a centralized platform where Students, Faculty, and Administrators interact through authenticated, role-protected interfaces. The system features a 24/7 grounded RAG AI tutor that delivers precise answers from uploaded PDF course materials backed by exact page-level citations. Additionally, an adaptive telemetry engine evaluates student quiz attempts to identify weak topics and automatically generate personalized study schedules, while an automated assessment tool assists instructors by generating Bloom's taxonomy-aligned quizzes from lecture documents.
+
+The system is implemented using a modern full-stack web architecture. The frontend is built with \textbf{React}, \textbf{Vite}, and \textbf{Tailwind CSS}, utilizing \textbf{React Router} for client-side navigation and protected routes. The backend is powered by \textbf{Node.js} and \textbf{Express.js}, employing JSON Web Tokens (\textbf{JWT}) and \textbf{Bcrypt} for multi-role authorization. Data storage and vector search operations are managed using \textbf{MongoDB Atlas}, \textbf{Pinecone} Vector Database, \textbf{LangChain}, and \textbf{OpenAI} (\texttt{gpt-4o-mini}).
+
+The application follows a modular software design separating UI components, authentication middleware, vector pipelines, and database operations to ensure maintainability and scalability. AI-LMS effectively bridges the gap between static content management and interactive digital education, significantly reducing faculty administrative overhead while improving student topic mastery.
+
+\vfill
+
+\noindent
+\textbf{Keywords:} Learning Management System, Retrieval-Augmented Generation (RAG), AI Tutor, Adaptive Learning, Telemetry Analytics, React, Node.js, Express, MongoDB, Pinecone, OpenAI

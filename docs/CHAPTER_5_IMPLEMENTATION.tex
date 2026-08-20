@@ -1,0 +1,244 @@
+\chapter{Implementation}
+
+The implementation phase translates the architectural designs of \textbf{AI-LMS} into a fully functional, production-ready full-stack web application. The platform is developed using a decoupled client-server architecture. The frontend is built with React 18, Vite, and Tailwind CSS, while the backend API is powered by Node.js and Express.js, connecting to MongoDB Atlas for NoSQL document persistence and Pinecone Vector Database for dense vector retrieval.
+
+Implementation focused on building robust services for multi-role JWT authentication, course management, Retrieval-Augmented Generation (\textbf{RAG}) vector ingestion, grounded AI tutoring with page citations, automated quiz evaluation, weak-topic telemetry tracking, and personalized study calendar generation.
+
+\section{Development Environment}
+
+AI-LMS is implemented using a modern JavaScript/Node.js ecosystem. The project is split into two primary directories: `/client` (frontend single-page application) and `/server` (RESTful API server).
+
+The primary technology stack utilized during implementation includes:
+
+\begin{itemize}
+    \item \textbf{React 18.3 \& Vite 5.2:} Used to build the component-driven frontend user interface.
+    \item \textbf{Tailwind CSS 3.4:} Used for utility-first responsive styling and modern UI cards.
+    \item \textbf{React Router 6:} Used for client-side routing and protected navigation guards.
+    \item \textbf{Node.js v18+ \& Express.js 4.19:} Used to build 14 RESTful API route modules.
+    \item \textbf{MongoDB Atlas \& Mongoose 8.4:} Used for NoSQL data persistence and relational schema modeling.
+    \item \textbf{Pinecone Vector DB v3.0:} Used for storing and searching 1536-dimensional vector embeddings.
+    \item \textbf{LangChain TextSplitters v1.0:} Used for extracting text and splitting lecture PDFs into chunks.
+    \item \textbf{OpenAI Node SDK v7.4:} Used for LLM prompt processing (\texttt{gpt-4o-mini}) and embeddings (\texttt{text-embedding-3-small}).
+    \item \textbf{JWT \& BcryptJS:} Used for multi-role stateless authentication and password encryption.
+    \item \textbf{Git \& GitHub:} Used for version control, repository maintenance, and issue tracking.
+\end{itemize}
+
+\section{Frontend \& Backend Project Structure}
+
+The application follows a clean modular directory layout separating frontend components, context providers, REST API controllers, middleware guards, and database services.
+
+A simplified representation of the full-stack project structure is shown below:
+
+\begin{verbatim}
+ai-lms/
+├── client/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── learning/
+│   │   │   │   ├── AIChatWindow.jsx
+│   │   │   │   ├── StudyCalendar.jsx
+│   │   │   │   └── StudyPlanFormModal.jsx
+│   │   │   ├── Layout.jsx
+│   │   │   ├── Navbar.jsx
+│   │   │   └── ProtectedRoute.jsx
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx
+│   │   ├── pages/
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── StudentDashboard.jsx
+│   │   │   └── CourseDetails.jsx
+│   │   └── services/
+│   │       └── api.js
+└── server/
+    ├── controllers/
+    │   ├── auth.controller.js
+    │   ├── course.controller.js
+    │   ├── learning.controller.js
+    │   ├── quiz.controller.js
+    │   └── rag.controller.js
+    ├── middlewares/
+    │   ├── auth.middleware.js
+    │   └── role.middleware.js
+    ├── models/
+    │   ├── User.js
+    │   ├── Course.js
+    │   ├── Quiz.js
+    │   ├── Attempt.js
+    │   └── StudyPlan.js
+    ├── routes/
+    │   ├── auth.routes.js
+    │   ├── learning.routes.js
+    │   ├── quiz.routes.js
+    │   └── rag.routes.js
+    └── services/
+        └── ai/
+            └── openai.service.js
+\end{verbatim}
+
+\section{Application Routing \& RESTful Endpoints}
+
+React Router manages client navigation on the frontend, while Express.js exposes 14 API route groups on the server. The major system routes and endpoints are detailed in Table~\ref{tab:routes}.
+
+\begin{table}[H]
+\centering
+\caption{Core API Routes and Purpose}
+\label{tab:routes}
+\begin{tabular}{p{0.30\textwidth} p{0.25\textwidth} p{0.35\textwidth}}
+\toprule
+\textbf{Frontend / API Route} & \textbf{HTTP Method} & \textbf{Purpose} \\
+\midrule
+`/api/auth/register` & POST & User registration \& role assignment. \\
+`/api/auth/login` & POST & User login \& JWT token issuance. \\
+`/api/courses` & GET / POST & Course catalog retrieval \& creation. \\
+`/api/materials/upload` & POST & PDF lecture material ingestion. \\
+`/api/ai/chat` & POST & RAG query execution with page citations. \\
+`/api/quizzes/:id/submit` & POST & Timed quiz submission \& telemetry scoring. \\
+`/api/learning/weak-topics` & GET & Quiz telemetry weak-topic analysis. \\
+`/api/study-plans/generate` & POST & AI study schedule generation \& save. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{MongoDB Atlas \& Pinecone Integration}
+
+Data storage is decoupled between MongoDB Atlas and Pinecone Vector Database. Mongoose ODM handles database connections and models core entities.
+
+When a PDF course material is uploaded, server-side services parse the document text using PDF-Parse, split text into chunks using LangChain (`chunkSize: 1000`, `chunkOverlap: 200`), generate 1536-dimensional embeddings using OpenAI `text-embedding-3-small`, and upsert vectors into Pinecone with metadata tags (`courseId`, `pageNumber`, `fileTitle`).
+
+\section{User Authentication \& Multi-Role Security}
+
+User authentication is implemented using JSON Web Tokens and Bcrypt password encryption.
+
+The user authentication workflow operates as follows:
+
+\begin{enumerate}
+    \item User submits registration/login credentials from the React frontend.
+    \item Server controller validates inputs using Express-Validator.
+    \item Passwords are encrypted/verified using BcryptJS (`salt: 10`).
+    \item Upon successful validation, the server generates a JWT signed with a secret key containing user ID and role claims (`admin`, `faculty`, `student`).
+    \item Client stores the token and includes it in HTTP `Authorization: Bearer <token>` headers.
+    \item Auth middleware decodes the token and attaches user context to incoming requests.
+\end{enumerate}
+
+\section{Protected Routes \& Middleware Guards}
+
+Access control is enforced on both frontend and backend tiers:
+
+\begin{itemize}
+    \item \textbf{Frontend Guard (`ProtectedRoute.jsx`):} Checks `AuthContext` state. Unauthenticated requests are redirected to `/login`, while unauthorized roles are blocked.
+    
+    \item \textbf{Backend Guard (`auth.middleware.js`):} Middleware validates JWT signatures. Route-level authorization (`authorize('faculty', 'admin')`) restricts API routes to specific user roles.
+\end{itemize}
+
+\section{RAG Vector Ingestion \& Search Implementation}
+
+The RAG pipeline provides 24/7 grounded academic tutoring without factual hallucinations.
+
+The complete RAG pipeline execution workflow is rendered in TikZ code in Figure~\ref{fig:ragworkflow}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    block/.style={draw, rectangle, align=center, minimum width=8cm, minimum height=0.75cm, font=\small, thick},
+    arrow/.style={->, >=stealth, thick}
+]
+\node (b1) [block] {1. Faculty Uploads PDF Lecture Document};
+\node (b2) [block, below=0.45cm of b1] {2. LangChain RecursiveCharacterTextSplitter (1000 chars, 200 overlap)};
+\node (b3) [block, below=0.45cm of b2] {3. OpenAI text-embedding-3-small Generates 1536-dim Vectors};
+\node (b4) [block, below=0.45cm of b3] {4. Pinecone Upsert with Metadata: \{ courseId, pageNumber, fileTitle \}};
+\node (b5) [block, below=0.45cm of b4] {5. Student Submits Query $\rightarrow$ Vector Similarity Search (Top-k)};
+\node (b6) [block, below=0.45cm of b5] {6. OpenAI gpt-4o-mini Formats Response + Exact Page Citations};
+
+\draw[arrow] (b1) -- (b2);
+\draw[arrow] (b2) -- (b3);
+\draw[arrow] (b3) -- (b4);
+\draw[arrow] (b4) -- (b5);
+\draw[arrow] (b5) -- (b6);
+\end{tikzpicture}
+\caption{RAG Vector Ingestion Pipeline \& Execution Workflow}
+\label{fig:ragworkflow}
+\end{figure}
+
+This ensures every AI answer rendered in `AIChatWindow.jsx` includes verifiable document title and page number badges.
+
+\section{Adaptive Telemetry \& AI Study Planner Implementation}
+
+The adaptive telemetry engine tracks student quiz performance to generate dynamic study plans.
+
+The complete telemetry calculation and calendar scheduling workflow is rendered in TikZ code in Figure~\ref{fig:telemetryworkflow}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    stepbox/.style={draw, rectangle, align=center, minimum width=8.5cm, minimum height=0.75cm, font=\small, thick},
+    arrow/.style={->, >=stealth, thick}
+]
+\node (s1) [stepbox] {1. Student Takes Interactive Timed Quiz \& Submits Answers};
+\node (s2) [stepbox, below=0.45cm of s1] {2. Telemetry Engine Scores Answers \& Maps Accuracy per Topic};
+\node (s3) [stepbox, below=0.45cm of s2] {3. Weak Topic Detection: Flag Accuracy $< 60\%$};
+\node (s4) [stepbox, below=0.45cm of s3] {4. OpenAI gpt-4o-mini Synthesizes Daily Remediation Tasks};
+\node (s5) [stepbox, below=0.45cm of s4] {5. Save Tasks to MongoDB StudyPlans Collection};
+\node (s6) [stepbox, below=0.45cm of s5] {6. Render Dynamic Tasks on Interactive StudyCalendar.jsx UI};
+
+\draw[arrow] (s1) -- (s2);
+\draw[arrow] (s2) -- (s3);
+\draw[arrow] (s3) -- (s4);
+\draw[arrow] (s4) -- (s5);
+\draw[arrow] (s5) -- (s6);
+\end{tikzpicture}
+\caption{Telemetry Weak-Topic Calculation \& Calendar Scheduling Workflow}
+\label{fig:telemetryworkflow}
+\end{figure}
+
+\section{Faculty AI Quiz Generator Implementation}
+
+To reduce instructor administrative workload, an automated quiz generator service was implemented. Faculty members select an uploaded lecture PDF, and the backend extracts document text chunks, prompting OpenAI to synthesize multiple-choice questions aligned with Bloom's Taxonomy. The generated questions are automatically saved into MongoDB question banks.
+
+\section{Error Handling}
+
+Global error handling is implemented across backend controllers and frontend API services using `try-catch` blocks and Express error middleware. Asynchronous API calls return standard JSON error responses (`{ success: false, message: "..." }`), preventing application crashes during network or API key failures.
+
+\section{Security Implementation}
+
+Security mechanisms implemented include:
+\begin{itemize}
+    \item \textbf{Bcrypt Hashing:} Enforces 10-round salt password encryption.
+    \item \textbf{JWT Token Expiry:} Access tokens expire in 2 hours; refresh tokens expire in 7 days.
+    \item \textbf{Vector Namespace Isolation:} Pinecone vector queries filter vectors strictly by `{ courseId }`.
+    \item \textbf{CORS Policy:} Restricts server API access to approved frontend client URLs.
+\end{itemize}
+
+\section{Testing of Implemented Features}
+
+Comprehensive functional testing was conducted across all core modules. The test cases and verification results are summarized in Table~\ref{tab:testcases}.
+
+\begin{table}[H]
+\centering
+\caption{Functional Test Cases and Status}
+\label{tab:testcases}
+\begin{tabular}{p{0.32\textwidth} p{0.48\textwidth} p{0.10\textwidth}}
+\toprule
+\textbf{Test Case} & \textbf{Expected Result} & \textbf{Status} \\
+\midrule
+User Registration & Account created with role assignment in MongoDB. & Pass \\
+Valid JWT Login & Returns Bearer token and redirects to dashboard. & Pass \\
+Protected Route Guard & Restricts unauthenticated access to dashboards. & Pass \\
+PDF Vector Ingestion & Chunks PDF and upserts 1536-dim vectors into Pinecone. & Pass \\
+Grounded RAG Query & AI Tutor returns answer with exact PDF page citations. & Pass \\
+Timed Quiz Execution & Interactive timer counts down and submits answers. & Pass \\
+Telemetry Scoring & Calculates score and identifies weak topics ($<60\%$). & Pass \\
+AI Study Schedule & Generates personalized tasks rendered on calendar. & Pass \\
+AI Quiz Generation & Synthesizes Bloom-aligned questions from lecture PDF. & Pass \\
+User Logout & Clears JWT token and terminates authenticated session. & Pass \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Implementation Status}
+
+The implementation has achieved 85\% completion for the First Evaluation stage. Core MERN API routes, JWT security, course building, PDF ingestion, Pinecone vector search, grounded RAG AI tutoring, timed quizzes, telemetry tracking, and personalized study calendar planning are fully operational. Remaining tasks focus on Server-Sent Events (\textbf{SSE}) real-time token streaming and WebSockets notifications.
+
+\section{Summary}
+
+This chapter described the implementation details of the AI-LMS platform. The application was built on a modern full-stack MERN foundation integrated with Pinecone Vector Database and OpenAI API. Functional testing verified that the RAG AI Tutor delivers grounded responses with page citations, while the telemetry engine successfully constructs adaptive study plans. The resulting platform transforms static document management into an interactive, grounded, and personalized digital learning ecosystem.
