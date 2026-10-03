@@ -73,6 +73,12 @@ const deleteNotification = async (req, res, next) => {
 const syncReminders = async (req, res, next) => {
   try {
     const data = await notificationService.syncReminders(req.user._id);
+    return successResponse(res, 'Reminders synchronized successfully', data);
+  } catch (error) {
+    next(error);
+  }
+};
+
 /**
  * Send targeted or broadcast notification (Admin only)
  * POST /api/notifications/send
