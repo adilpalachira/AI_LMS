@@ -64,6 +64,7 @@ import AtRiskStudentsPage from './pages/analytics/AtRiskStudentsPage';
 
 // Module 10 Learning Analytics & Dashboards Page
 import LearningAnalyticsPage from './pages/analytics/LearningAnalyticsPage';
+import AnalyticsReportsPage from './pages/analytics/AnalyticsReportsPage';
 
 // Module 11 Notifications Page
 import NotificationsPage from './pages/notifications/NotificationsPage';
@@ -596,6 +597,18 @@ const AppContent = () => {
               <ProtectedRoute>
                 <RoleGuard allowedRoles={['Admin', 'Faculty']}>
                   <QuizPreview />
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Unified Analytics & Reports Route */}
+          <Route
+            path="/analytics-reports"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin', 'Faculty']}>
+                  <AnalyticsReportsPage />
                 </RoleGuard>
               </ProtectedRoute>
             }

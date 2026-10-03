@@ -27,33 +27,50 @@ const Sidebar = () => {
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
-  // Dynamic menu items based on role (Calendar & Achievements removed as per requirement)
-  const menuItems = [
-    { name: 'Dashboard', icon: Grid, path: '/dashboard' },
-    ...(user?.role === 'Admin' ? [{ name: 'Users', icon: UsersIcon, path: '/admin/users' }] : []),
-    { name: 'Courses', icon: BookOpen, path: '/courses' },
-    ...(user?.role === 'Student' ? [{ name: 'My Courses', icon: GraduationCap, path: '/my-courses' }] : []),
-    ...(['Admin', 'Faculty'].includes(user?.role) ? [{ name: 'Manage Courses', icon: FolderOpen, path: '/manage-courses' }] : []),
-    ...(user?.role === 'Admin' ? [{ name: 'Categories', icon: Settings, path: '/admin/categories' }] : []),
-    { name: 'Assignments', icon: FileText, path: '/assignments' },
-    ...(['Admin', 'Faculty'].includes(user?.role) ? [
+  // Dynamic menu items based on role according to exact UI specification
+  let menuItems = [];
+
+  if (user?.role === 'Admin') {
+    menuItems = [
+      { name: 'Dashboard', icon: Grid, path: '/dashboard' },
+      { name: 'Users', icon: UsersIcon, path: '/admin/users' },
+      { name: 'Courses', icon: BookOpen, path: '/courses' },
+      { name: 'Categories', icon: Settings, path: '/admin/categories' },
+      { name: 'Assignments', icon: FileText, path: '/assignments' },
+      { name: 'Analytics & Reports', icon: LineChart, path: '/analytics-reports' },
+      { name: 'At-Risk Students', icon: ShieldAlert, path: '/at-risk-students' },
+      { name: 'Notifications', icon: Bell, path: '/notifications' },
+      { name: 'Settings', icon: Settings, path: '/settings' },
+    ];
+  } else if (user?.role === 'Faculty') {
+    menuItems = [
+      { name: 'Dashboard', icon: Grid, path: '/dashboard' },
+      { name: 'Courses', icon: BookOpen, path: '/courses' },
+      { name: 'Assignments', icon: FileText, path: '/assignments' },
       { name: 'AI Quiz Generator', icon: BrainCircuit, path: '/ai-quiz-generator' },
       { name: 'Question Bank', icon: BookOpen, path: '/question-bank' },
-    ] : []),
-    ...(user?.role === 'Student' ? [{ name: 'AI Tutor', icon: BrainCircuit, path: '/ai-tutor' }] : []),
-    ...(user?.role === 'Student' ? [
+      { name: 'Analytics & Reports', icon: LineChart, path: '/analytics-reports' },
+      { name: 'At-Risk Students', icon: ShieldAlert, path: '/at-risk-students' },
+      { name: 'Notifications', icon: Bell, path: '/notifications' },
+      { name: 'Messages', icon: MessageSquare, path: '#' },
+      { name: 'Settings', icon: Settings, path: '/settings' },
+    ];
+  } else {
+    // Student
+    menuItems = [
+      { name: 'Dashboard', icon: Grid, path: '/dashboard' },
+      { name: 'Courses', icon: BookOpen, path: '/courses' },
+      { name: 'My Courses', icon: GraduationCap, path: '/my-courses' },
+      { name: 'Assignments', icon: FileText, path: '/assignments' },
+      { name: 'AI Tutor', icon: BrainCircuit, path: '/ai-tutor' },
       { name: 'Personalized Learning', icon: BrainCircuit, path: '/personalized-learning' },
       { name: 'Study Planner', icon: CalendarRange, path: '/study-planner' },
-    ] : []),
-    { name: 'Analytics', icon: LineChart, path: '/analytics' },
-    ...(['Admin', 'Faculty'].includes(user?.role) ? [
-      { name: 'At-Risk Students', icon: ShieldAlert, path: '/at-risk-students' },
-      { name: 'Reports', icon: FileSpreadsheet, path: '/reports' },
-    ] : []),
-    { name: 'Notifications', icon: Bell, path: '/notifications' },
-    { name: 'Messages', icon: MessageSquare, path: '#' },
-    { name: 'Settings', icon: Settings, path: '/settings' },
-  ];
+      { name: 'Analytics', icon: LineChart, path: '/analytics' },
+      { name: 'Notifications', icon: Bell, path: '/notifications' },
+      { name: 'Messages', icon: MessageSquare, path: '#' },
+      { name: 'Settings', icon: Settings, path: '/settings' },
+    ];
+  }
 
   return (
     <aside className="w-[260px] h-screen bg-[#F8FAFC] border-r border-gray-200/80 flex flex-col justify-between py-6 px-4 shrink-0 sticky top-0 font-sans select-none">

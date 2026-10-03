@@ -727,11 +727,62 @@ const getAdminSystemAnalytics = async (timeframe = '30d') => {
   // Sort course comparison table by highest enrolled students first
   courseComparisons.sort((a, b) => b.enrolledStudents - a.enrolledStudents);
 
-  // 4. System Level Objective Insights
+  // 5. Question Content Monitoring Metrics for Admin
+  const totalQuestions = await Question.countDocuments();
+  const questionsAiCount = await Question.countDocuments({ isAiGenerated: true });
+  const questionsManualCount = Math.max(0, totalQuestions - questionsAiCount);
+
+  const easyQuestionsCount = await Question.countDocuments({ difficulty: 'Easy' });
+  const mediumQuestionsCount = await Question.countDocuments({ difficulty: 'Medium' });
+  const hardQuestionsCount = await Question.countDocuments({ difficulty: 'Hard' });
+
+  const mcqCount = await Question.countDocuments({ type: { $in: ['Multiple Choice', 'MCQ'] } });
+  const tfCount = await Question.countDocuments({ type: 'True/False' });
+  const shortAnswerCount = await Question.countDocuments({ type: { $in: ['Short Answer', 'Essay', 'Descriptive'] } });
+
+  const questionsByCourse = await Question.aggregate([
+    { $match: { courseId: { $ne: null } } },
+    { $group: { _id: '$courseId', count: { $sum: 1 } } },
+    { $lookup: { from: 'courses', localField: '_id', foreignField: '_id', as: 'course' } },
+    { $unwind: '$course' },
+    { $project: { courseTitle: '$course.title', courseCode: '$course.code', count: 1 } },
+    { $sort: { count: -1 } },
+    { $limit: 8 }
+  ]);
+
+  const questionsByFaculty = await Question.aggregate([
+    { $match: { createdBy: { $ne: null } } },
+    { $group: { _id: '$createdBy', count: { $sum: 1 } } },
+    { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
+    { $unwind: '$user' },
+    { $project: { facultyName: '$user.name', count: 1 } },
+    { $sort: { count: -1 } },
+    { $limit: 8 }
+  ]);
+
+  const questionOverview = {
+    totalQuestions,
+    questionsAiCount,
+    questionsManualCount,
+    difficultyDistribution: {
+      easy: easyQuestionsCount,
+      medium: mediumQuestionsCount,
+      hard: hardQuestionsCount
+    },
+    typeDistribution: {
+      mcq: mcqCount,
+      trueFalse: tfCount,
+      shortAnswer: shortAnswerCount
+    },
+    questionsByCourse,
+    questionsByFaculty
+  };
+
   const insights = [
     `Platform hosts ${totalUsers} users (${studentCount} students, ${facultyCount} faculty) across ${publishedCoursesCount} published courses.`,
     `System-wide course completion rate stands at ${systemCompletionRate}% with ${activeStudentsCount} active students in the last 14 days.`,
     `Total assessment participation: ${totalQuizAttempts} quiz attempts and ${totalSubmissions} assignment submissions recorded.`,
+    `Question repository contains ${totalQuestions} items (${questionsAiCount} AI-generated, ${questionsManualCount} faculty created).`,
     `System-wide risk status: ${systemHighRiskCount} high risk and ${systemMediumRiskCount} medium risk student flags identified.`
   ];
 
@@ -753,7 +804,8 @@ const getAdminSystemAnalytics = async (timeframe = '30d') => {
       totalQuizzes,
       totalQuizAttempts,
       totalAssignments,
-      totalSubmissions
+      totalSubmissions,
+      totalQuestions
     },
     riskBreakdown: {
       high: systemHighRiskCount,
@@ -761,6 +813,7 @@ const getAdminSystemAnalytics = async (timeframe = '30d') => {
       low: systemLowRiskCount,
       unevaluated: systemUnevaluatedCount
     },
+    questionOverview,
     courseComparisons,
     insights
   };

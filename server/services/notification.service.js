@@ -4,6 +4,7 @@ const Assignment = require('../models/assignment.model');
 const Submission = require('../models/submission.model');
 const StudyPlanTask = require('../models/studyPlanTask.model');
 const Course = require('../models/course.model');
+const User = require('../models/user.model');
 
 /**
  * Create a single notification with duplicate event prevention
@@ -251,6 +252,106 @@ const syncReminders = async (userId) => {
   }
 };
 
+/**
+ * Admin targeted & broadcast notification dispatcher
+ */
+const sendAdminNotification = async (payload, senderId) => {
+  const {
+    recipientType = 'custom',
+    recipientIds = [],
+    courseId = null,
+    title,
+    message,
+    priority = 'Normal',
+    actionUrl = ''
+  } = payload;
+
+  if (!title || !message) {
+    throw new Error('Notification title and message are required');
+  }
+
+  let targetUserIds = [];
+
+  if (recipientType === 'all_students') {
+    const students = await User.find({ role: 'Student', status: 'Active' }).select('_id');
+    targetUserIds = students.map(s => s._id);
+  } else if (recipientType === 'all_faculty') {
+    const faculty = await User.find({ role: 'Faculty', status: 'Active' }).select('_id');
+    targetUserIds = faculty.map(f => f._id);
+  } else if (recipientType === 'all_users') {
+    const allUsers = await User.find({ status: 'Active' }).select('_id');
+    targetUserIds = allUsers.map(u => u._id);
+  } else if (recipientType === 'course_students' && courseId) {
+    const enrollments = await Enrollment.find({ course: courseId, status: 'Active' }).select('student');
+    targetUserIds = enrollments.map(e => e.student);
+  } else if (Array.isArray(recipientIds) && recipientIds.length > 0) {
+    targetUserIds = recipientIds;
+  }
+
+  // Deduplicate target IDs
+  const uniqueRecipientIds = [...new Set(targetUserIds.map(id => id.toString()))];
+
+  if (uniqueRecipientIds.length === 0) {
+    throw new Error('No valid recipients found for this notification');
+  }
+
+  const notificationsToCreate = uniqueRecipientIds.map(recipientId => ({
+    recipient: recipientId,
+    sender: senderId,
+    type: 'SYSTEM_ANNOUNCEMENT',
+    title: title.trim(),
+    message: message.trim(),
+    priority: priority === 'Important' ? 'Important' : 'Normal',
+    relatedEntity: courseId || null,
+    relatedEntityType: courseId ? 'Course' : 'System',
+    actionUrl: actionUrl || ''
+  }));
+
+  const created = await Notification.insertMany(notificationsToCreate);
+  return {
+    success: true,
+    recipientsCount: uniqueRecipientIds.length,
+    createdCount: created.length
+  };
+};
+
+/**
+ * Fetch sent notification history for Admin audit
+ */
+const getAdminNotificationHistory = async (adminId, options = {}) => {
+  const page = Math.max(1, parseInt(options.page) || 1);
+  const limit = Math.max(1, Math.min(100, parseInt(options.limit) || 20));
+  const skip = (page - 1) * limit;
+
+  const query = {
+    $or: [
+      { sender: adminId },
+      { type: 'SYSTEM_ANNOUNCEMENT' }
+    ]
+  };
+
+  const [notifications, total] = await Promise.all([
+    Notification.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('recipient', 'name email role')
+      .populate('sender', 'name email role')
+      .lean(),
+    Notification.countDocuments(query)
+  ]);
+
+  return {
+    notifications,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit) || 1
+    }
+  };
+};
+
 module.exports = {
   createNotification,
   createBulkNotifications,
@@ -260,5 +361,7 @@ module.exports = {
   markAsRead,
   markAllAsRead,
   deleteNotification,
-  syncReminders
+  syncReminders,
+  sendAdminNotification,
+  getAdminNotificationHistory
 };

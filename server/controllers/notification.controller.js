@@ -73,7 +73,27 @@ const deleteNotification = async (req, res, next) => {
 const syncReminders = async (req, res, next) => {
   try {
     const data = await notificationService.syncReminders(req.user._id);
-    return successResponse(res, 'Reminders synchronized successfully', data);
+/**
+ * Send targeted or broadcast notification (Admin only)
+ * POST /api/notifications/send
+ */
+const sendAdminNotification = async (req, res, next) => {
+  try {
+    const result = await notificationService.sendAdminNotification(req.body, req.user._id);
+    return successResponse(res, `Notification sent successfully to ${result.recipientsCount} recipient(s)`, result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get history of sent notifications (Admin only)
+ * GET /api/notifications/history
+ */
+const getAdminNotificationHistory = async (req, res, next) => {
+  try {
+    const data = await notificationService.getAdminNotificationHistory(req.user._id, req.query);
+    return successResponse(res, 'Sent notification history retrieved', data);
   } catch (error) {
     next(error);
   }
@@ -85,5 +105,7 @@ module.exports = {
   markAsRead,
   markAllAsRead,
   deleteNotification,
-  syncReminders
+  syncReminders,
+  sendAdminNotification,
+  getAdminNotificationHistory
 };

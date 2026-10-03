@@ -6,6 +6,7 @@ const Submission = require('../models/submission.model');
 const Quiz = require('../models/quiz.model');
 const QuizAttempt = require('../models/quizAttempt.model');
 const Category = require('../models/category.model');
+const Question = require('../models/question.model');
 const analyticsService = require('./analytics.service');
 
 /**
@@ -528,8 +529,70 @@ const REPORT_CATALOG = [
     description: 'Platform-wide executive overview with total user demographics, system completion rates, and cross-course comparisons.',
     category: 'Executive',
     allowedRoles: ['Admin']
+  },
+  {
+    id: 'QUESTION_OVERVIEW',
+    title: 'Question Bank & Assessment Inventory',
+    description: 'Comprehensive audit of question items across courses, difficulty levels, AI origins, and creator tracking.',
+    category: 'Assessment',
+    allowedRoles: ['Admin', 'Faculty']
   }
 ];
+
+/**
+ * 8. QUESTION BANK & CURRICULUM OVERVIEW REPORT
+ */
+const generateQuestionOverviewReport = async (filters = {}, currentUser) => {
+  const query = {};
+  if (filters.courseId) query.courseId = filters.courseId;
+  if (filters.difficulty && filters.difficulty !== 'All') query.difficulty = filters.difficulty;
+  if (filters.type && filters.type !== 'All') query.type = filters.type;
+
+  const questions = await Question.find(query)
+    .populate('courseId', 'title code')
+    .populate('createdBy', 'name email')
+    .sort({ createdAt: -1 });
+
+  const totalQuestions = questions.length;
+  const aiGeneratedCount = questions.filter(q => q.isAiGenerated).length;
+  const manualCount = Math.max(0, totalQuestions - aiGeneratedCount);
+
+  const rows = questions.map((q, idx) => ({
+    slNo: idx + 1,
+    questionText: q.question,
+    type: q.type,
+    difficulty: q.difficulty || 'Medium',
+    isAiGenerated: q.isAiGenerated ? 'AI Generated' : 'Manual',
+    course: q.courseId ? `${q.courseId.code || ''} ${q.courseId.title}`.trim() : 'General',
+    createdBy: q.createdBy?.name || 'System / Faculty',
+    createdAt: q.createdAt ? new Date(q.createdAt).toISOString().split('T')[0] : '—'
+  }));
+
+  return {
+    reportType: 'QUESTION_OVERVIEW',
+    title: 'Question Bank & Assessment Inventory Report',
+    description: 'Comprehensive inventory of questions, taxonomy levels, AI origins, and creator tracking.',
+    generatedAt: new Date(),
+    columns: [
+      { key: 'slNo', label: '#' },
+      { key: 'questionText', label: 'Question Statement' },
+      { key: 'type', label: 'Type' },
+      { key: 'difficulty', label: 'Difficulty' },
+      { key: 'isAiGenerated', label: 'Origin' },
+      { key: 'course', label: 'Course' },
+      { key: 'createdBy', label: 'Created By' },
+      { key: 'createdAt', label: 'Date Added' }
+    ],
+    summary: {
+      totalQuestions,
+      aiGenerated: aiGeneratedCount,
+      facultyCreated: manualCount,
+      easyCount: questions.filter(q => q.difficulty === 'Easy').length,
+      hardCount: questions.filter(q => q.difficulty === 'Hard').length
+    },
+    rows
+  };
+};
 
 /**
  * Get catalog of available reports for user role
@@ -566,6 +629,9 @@ const generateReport = async (reportType, filters = {}, currentUser) => {
       break;
     case 'ACADEMIC_SUMMARY':
       result = await generateAcademicSummaryReport(filters, currentUser);
+      break;
+    case 'QUESTION_OVERVIEW':
+      result = await generateQuestionOverviewReport(filters, currentUser);
       break;
     default: {
       const err = new Error(`Unsupported report type: ${reportType}`);
