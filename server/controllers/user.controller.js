@@ -44,7 +44,7 @@ const getProfile = async (req, res, next) => {
  */
 const updateProfile = async (req, res, next) => {
   try {
-    const { name, phone } = req.body;
+    const { name, phone, notificationPreferences, themePreference } = req.body;
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -53,6 +53,27 @@ const updateProfile = async (req, res, next) => {
 
     if (name) user.name = name;
     if (phone !== undefined) user.phone = phone;
+
+    if (notificationPreferences !== undefined) {
+      let prefs = notificationPreferences;
+      if (typeof prefs === 'string') {
+        try {
+          prefs = JSON.parse(prefs);
+        } catch (e) {
+          // ignore parse error
+        }
+      }
+      if (typeof prefs === 'object' && prefs !== null) {
+        user.notificationPreferences = {
+          ...(user.notificationPreferences || {}),
+          ...prefs,
+        };
+      }
+    }
+
+    if (themePreference && ['light', 'dark', 'system'].includes(themePreference)) {
+      user.themePreference = themePreference;
+    }
 
     if (req.file) {
       user.profileImage = req.file.path;

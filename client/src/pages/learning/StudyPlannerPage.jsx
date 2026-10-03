@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import learningService from '../../services/learningService';
 import { getMyEnrollments } from '../../services/courseService';
+import { getSectionsByCourse } from '../../services/contentService';
 import StudyTask from '../../components/learning/StudyTask';
 import StudyCalendar from '../../components/learning/StudyCalendar';
 import StudyPlanFormModal from '../../components/learning/StudyPlanFormModal';
@@ -11,6 +12,7 @@ const StudyPlannerPage = () => {
   const [studyPlans, setStudyPlans] = useState([]);
   const [activePlan, setActivePlan] = useState(null);
   const [tasks, setTasks] = useState([]);
+  const [courseLessons, setCourseLessons] = useState([]);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -57,6 +59,19 @@ const StudyPlannerPage = () => {
       if (res.success && res.data) {
         setActivePlan(res.data.plan);
         setTasks(res.data.tasks || []);
+
+        const courseId = res.data.plan?.courseId?._id || res.data.plan?.courseId;
+        if (courseId) {
+          try {
+            const secRes = await getSectionsByCourse(courseId);
+            if (secRes.success && Array.isArray(secRes.data)) {
+              const lessons = secRes.data.flatMap((s) => s.lessons || []);
+              setCourseLessons(lessons);
+            }
+          } catch (secErr) {
+            console.error('[StudyPlannerPage] Failed to load course lessons:', secErr);
+          }
+        }
       }
     } catch (err) {
       console.error('[StudyPlannerPage] Plan details error:', err);
@@ -351,6 +366,8 @@ const StudyPlannerPage = () => {
                       <StudyTask
                         key={task._id}
                         task={task}
+                        courseId={activePlan?.courseId?._id || activePlan?.courseId}
+                        courseLessons={courseLessons}
                         onComplete={handleCompleteTask}
                         onSkip={handleSkipTask}
                         onReschedule={handleRescheduleTask}

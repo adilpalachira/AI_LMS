@@ -12,6 +12,9 @@ router.get('/:id', studyPlanController.getStudyPlanById);
 router.delete('/:id', studyPlanController.deleteStudyPlan);
 
 // Task Action Endpoints
+router.post('/complete-lesson', studyPlanController.completeLessonTask);
+router.get('/tasks/:id/resolve-content', studyPlanController.resolveTaskContent);
+router.post('/resolve-topic', studyPlanController.resolveTopicContent);
 router.patch('/tasks/:id/complete', studyPlanController.completeTask);
 router.patch('/tasks/:id/status', studyPlanController.updateTaskStatus);
 router.patch('/tasks/:id/reschedule', studyPlanController.rescheduleTask);

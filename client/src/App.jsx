@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleGuard from './components/RoleGuard';
@@ -13,6 +14,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Profile from './pages/Profile';
+import SettingsPage from './pages/settings/SettingsPage';
 import Dashboard from './pages/Dashboard';
 
 // Admin Pages
@@ -55,6 +57,19 @@ import AITutorPage from './pages/ai/AITutorPage';
 // Module 8 Personalized Learning & Study Planner Pages
 import PersonalizedLearning from './pages/learning/PersonalizedLearning';
 import StudyPlannerPage from './pages/learning/StudyPlannerPage';
+
+// Module 9 Analytics & At-Risk Pages
+import PerformanceAnalyticsPage from './pages/analytics/PerformanceAnalyticsPage';
+import AtRiskStudentsPage from './pages/analytics/AtRiskStudentsPage';
+
+// Module 10 Learning Analytics & Dashboards Page
+import LearningAnalyticsPage from './pages/analytics/LearningAnalyticsPage';
+
+// Module 11 Notifications Page
+import NotificationsPage from './pages/notifications/NotificationsPage';
+
+// Module 12 Reports & Admin Insights Page
+import ReportsPage from './pages/reports/ReportsPage';
 
 // Hook
 import { useAuth } from './hooks/useAuth';
@@ -281,6 +296,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />
@@ -578,6 +601,56 @@ const AppContent = () => {
             }
           />
 
+          {/* Module 10 Intelligent Learning Analytics & Dashboards */}
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <LearningAnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/performance-analytics"
+            element={
+              <ProtectedRoute>
+                <PerformanceAnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/at-risk-students"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin', 'Faculty']}>
+                  <AtRiskStudentsPage />
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Module 11 Notifications & Alerts Route */}
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Module 12 Reports & Admin Insights Route */}
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin', 'Faculty']}>
+                  <ReportsPage />
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+
           {/* Fallback Catch-All Redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -592,9 +665,11 @@ const AppContent = () => {
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ThemeProvider>
     </Router>
   );
 }

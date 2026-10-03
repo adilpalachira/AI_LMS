@@ -1,5 +1,43 @@
 const mongoose = require('mongoose');
 
+const GeneratedQuestionSchema = new mongoose.Schema(
+  {
+    question: {
+      type: String
+    },
+    type: {
+      type: String
+    },
+    difficulty: {
+      type: String
+    },
+    options: {
+      type: [String],
+      default: []
+    },
+    correctAnswer: {
+      type: mongoose.Schema.Types.Mixed
+    },
+    explanation: {
+      type: String,
+      default: ''
+    },
+    marks: {
+      type: Number,
+      default: 1
+    },
+    source: {
+      type: String,
+      default: ''
+    },
+    sourcePage: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null
+    }
+  },
+  { _id: false }
+);
+
 const QuizGenerationHistorySchema = new mongoose.Schema(
   {
     createdBy: {
@@ -45,19 +83,7 @@ const QuizGenerationHistorySchema = new mongoose.Schema(
       enum: ['PENDING', 'GENERATING', 'COMPLETED', 'FAILED'],
       default: 'PENDING'
     },
-    generatedQuestions: [
-      {
-        question: String,
-        type: String,
-        difficulty: String,
-        options: [String],
-        correctAnswer: mongoose.Schema.Types.Mixed,
-        explanation: String,
-        marks: Number,
-        source: String,
-        sourcePage: mongoose.Schema.Types.Mixed
-      }
-    ],
+    generatedQuestions: [GeneratedQuestionSchema],
     generatedQuestionIds: [
       {
         type: mongoose.Schema.Types.ObjectId,

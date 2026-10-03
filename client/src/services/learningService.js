@@ -66,6 +66,21 @@ const learningService = {
   updateTaskStatus: async (taskId, status) => {
     const response = await api.patch(`/study-plans/tasks/${taskId}/status`, { status });
     return response.data;
+  },
+
+  completeLessonTask: async (courseId, lessonId) => {
+    const response = await api.post('/study-plans/complete-lesson', { courseId, lessonId });
+    return response.data;
+  },
+
+  resolveTaskContent: async (taskId) => {
+    const response = await api.get(`/study-plans/tasks/${taskId}/resolve-content`);
+    return response.data;
+  },
+
+  resolveTopicContent: async ({ courseId, topic, title, resourceType }) => {
+    const response = await api.post('/study-plans/resolve-topic', { courseId, topic, title, resourceType });
+    return response.data;
   }
 };
 

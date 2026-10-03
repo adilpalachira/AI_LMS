@@ -167,26 +167,34 @@ const Login = () => {
           </form>
 
           {/* Quick Access Demo Badges */}
-          <div className="pt-2 border-t border-gray-100 space-y-2">
+          <div className="pt-2 border-t border-gray-100 space-y-2.5">
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider text-center">
-              Quick Demo Login
+              Quick 1-Click Login
             </p>
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2">
               <button
                 type="button"
-                onClick={() => handleQuickFill('student@example.com', 'Student@123')}
-                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold px-3.5 py-1.5 rounded-lg border border-gray-300 transition-all flex items-center gap-1.5"
+                onClick={() => handleQuickFill('student@lms.com', 'StudentPassword123!')}
+                className="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold px-3 py-1.5 rounded-xl border border-emerald-200 transition-all flex items-center gap-1.5 shadow-2xs"
               >
-                <UserCheck size={13} className="text-gray-900" />
-                Student Demo
+                <UserCheck size={13} className="text-emerald-700" />
+                Student
               </button>
               <button
                 type="button"
-                onClick={() => handleQuickFill('admin@example.com', 'Admin@123')}
-                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold px-3.5 py-1.5 rounded-lg border border-gray-300 transition-all flex items-center gap-1.5"
+                onClick={() => handleQuickFill('sarah.jenkins@lms.com', 'FacultyPassword123!')}
+                className="text-xs bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold px-3 py-1.5 rounded-xl border border-purple-200 transition-all flex items-center gap-1.5 shadow-2xs"
               >
-                <ShieldCheck size={13} className="text-gray-900" />
-                Admin Demo
+                <Sparkles size={13} className="text-purple-700" />
+                Faculty
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickFill('admin@lms.com', 'AdminPassword123!')}
+                className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold px-3 py-1.5 rounded-xl border border-blue-200 transition-all flex items-center gap-1.5 shadow-2xs"
+              >
+                <ShieldCheck size={13} className="text-blue-700" />
+                Admin
               </button>
             </div>
           </div>

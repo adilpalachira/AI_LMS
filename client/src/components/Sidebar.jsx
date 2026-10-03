@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import React from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../contexts/ThemeContext';
 import { 
   Grid, 
   Users as UsersIcon,
@@ -10,21 +11,23 @@ import {
   CalendarRange, 
   BrainCircuit, 
   LineChart, 
-  Calendar, 
   FolderOpen, 
   MessageSquare, 
-  Trophy, 
   Settings,
   Sun,
   Moon,
-  ChevronsUpDown
+  ChevronsUpDown,
+  ShieldAlert,
+  Bell,
+  FileSpreadsheet
 } from 'lucide-react';
 
 const Sidebar = () => {
   const { user } = useAuth();
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
+  const navigate = useNavigate();
 
-  // Dynamic menu items based on role
+  // Dynamic menu items based on role (Calendar & Achievements removed as per requirement)
   const menuItems = [
     { name: 'Dashboard', icon: Grid, path: '/dashboard' },
     ...(user?.role === 'Admin' ? [{ name: 'Users', icon: UsersIcon, path: '/admin/users' }] : []),
@@ -42,15 +45,18 @@ const Sidebar = () => {
       { name: 'Personalized Learning', icon: BrainCircuit, path: '/personalized-learning' },
       { name: 'Study Planner', icon: CalendarRange, path: '/study-planner' },
     ] : []),
-    { name: 'Analytics', icon: LineChart, path: '#' },
-    { name: 'Calendar', icon: Calendar, path: '#' },
+    { name: 'Analytics', icon: LineChart, path: '/analytics' },
+    ...(['Admin', 'Faculty'].includes(user?.role) ? [
+      { name: 'At-Risk Students', icon: ShieldAlert, path: '/at-risk-students' },
+      { name: 'Reports', icon: FileSpreadsheet, path: '/reports' },
+    ] : []),
+    { name: 'Notifications', icon: Bell, path: '/notifications' },
     { name: 'Messages', icon: MessageSquare, path: '#' },
-    { name: 'Achievements', icon: Trophy, path: '#' },
-    { name: 'Settings', icon: Settings, path: '#' },
+    { name: 'Settings', icon: Settings, path: '/settings' },
   ];
 
   return (
-    <aside className="w-[260px] h-screen bg-[#F8FAFC] border-r border-gray-200/80 flex flex-col justify-between py-6 px-4 shrink-0 sticky top-0 font-sans">
+    <aside className="w-[260px] h-screen bg-[#F8FAFC] border-r border-gray-200/80 flex flex-col justify-between py-6 px-4 shrink-0 sticky top-0 font-sans select-none">
       {/* Top Section: Logo */}
       <div className="flex flex-col space-y-8">
         <div className="flex items-center gap-3 px-3">
@@ -76,7 +82,7 @@ const Sidebar = () => {
               className={({ isActive }) => 
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
                   isActive && item.path !== '#'
-                    ? 'bg-gray-100 text-gray-900' 
+                    ? 'bg-gray-100 text-gray-900 font-semibold shadow-xs' 
                     : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
                 }`
               }
@@ -90,8 +96,12 @@ const Sidebar = () => {
 
       {/* Bottom Section: Student Profile Card & Theme Switch */}
       <div className="flex flex-col space-y-4 pt-4 border-t border-gray-200/60">
-        {/* Student Profile Card */}
-        <div className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 transition-colors select-none cursor-pointer">
+        {/* Student Profile Card (Navigates to /settings) */}
+        <div 
+          onClick={() => navigate('/settings')}
+          className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 transition-colors select-none cursor-pointer"
+          title="Account Settings"
+        >
           <div className="flex items-center gap-3 min-w-0">
             <div className="h-9 w-9 rounded-full bg-blue-600/10 border border-blue-600/20 flex items-center justify-center text-blue-600 text-sm font-semibold overflow-hidden shrink-0">
               {user?.profileImage ? (
@@ -106,7 +116,7 @@ const Sidebar = () => {
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-gray-900 truncate leading-none">
-                {user?.name || 'Adil M'}
+                {user?.name || 'User'}
               </p>
               <p className="text-[11px] font-medium text-gray-400 mt-1">
                 {user?.role || 'Student'}
@@ -119,16 +129,20 @@ const Sidebar = () => {
         {/* Theme Switch */}
         <div className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-xl">
           <span className="text-[11px] font-medium text-gray-500 flex items-center gap-2">
-            {isDarkMode ? <Moon size={13} className="text-gray-400" /> : <Sun size={13} className="text-gray-400" />}
+            {isDark ? <Moon size={13} className="text-blue-400" /> : <Sun size={13} className="text-amber-500" />}
             Theme mode
           </span>
           <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="w-10 h-6 bg-gray-200 rounded-full p-[2px] transition-colors focus:outline-none relative"
+            type="button"
+            onClick={toggleTheme}
+            aria-label="Toggle theme mode"
+            className={`w-10 h-6 rounded-full p-[2px] transition-colors focus:outline-none relative ${
+              isDark ? 'bg-blue-600' : 'bg-gray-200'
+            }`}
           >
             <div 
               className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${
-                isDarkMode ? 'translate-x-4' : 'translate-x-0'
+                isDark ? 'translate-x-4' : 'translate-x-0'
               }`}
             />
           </button>

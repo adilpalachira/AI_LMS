@@ -86,6 +86,18 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    notificationPreferences: {
+      assignmentReminders: { type: Boolean, default: true },
+      quizNotifications: { type: Boolean, default: true },
+      courseAnnouncements: { type: Boolean, default: true },
+      performanceAlerts: { type: Boolean, default: true },
+      studyPlanReminders: { type: Boolean, default: true }
+    },
+    themePreference: {
+      type: String,
+      enum: ['light', 'dark', 'system'],
+      default: 'light'
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
   },

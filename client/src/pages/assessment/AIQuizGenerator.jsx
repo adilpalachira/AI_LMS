@@ -6,6 +6,7 @@ import {
   getCourses,
   getCourseById
 } from '../../services/courseService';
+import { getSectionsByCourse } from '../../services/contentService';
 import {
   generateAiQuestions,
   bulkSaveQuestions,
@@ -96,14 +97,14 @@ const AIQuizGenerator = () => {
     if (!cId) return;
 
     try {
-      const res = await getCourseById(cId);
-      const courseObj = res.data || res;
-      setSections(courseObj.sections || []);
+      const secRes = await getSectionsByCourse(cId);
+      const sectionsList = secRes.data || secRes || [];
+      setSections(sectionsList);
       
       // Flatten lessons & materials
       const allL = [];
       const allM = [];
-      (courseObj.sections || []).forEach(sec => {
+      sectionsList.forEach(sec => {
         (sec.lessons || []).forEach(les => {
           allL.push(les);
           if (Array.isArray(les.materials)) {
@@ -115,6 +116,16 @@ const AIQuizGenerator = () => {
       setMaterials(allM);
     } catch (err) {
       console.error('Failed to load course details:', err);
+    }
+  };
+
+  const handleLessonChange = (lessonId) => {
+    setSelectedLessonId(lessonId);
+    if (lessonId && selectedMaterialId) {
+      const material = materials.find(m => m._id === selectedMaterialId);
+      if (material && String(material.lessonId) !== String(lessonId)) {
+        setSelectedMaterialId('');
+      }
     }
   };
 
@@ -364,7 +375,7 @@ const AIQuizGenerator = () => {
                 <label className="text-xs font-semibold text-gray-700">Lesson (Optional)</label>
                 <select
                   value={selectedLessonId}
-                  onChange={(e) => setSelectedLessonId(e.target.value)}
+                  onChange={(e) => handleLessonChange(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-xs rounded-xl p-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
                 >
                   <option value="">-- Entire Course --</option>
@@ -385,11 +396,13 @@ const AIQuizGenerator = () => {
                   className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-xs rounded-xl p-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
                 >
                   <option value="">-- All Materials --</option>
-                  {materials.map(m => (
-                    <option key={m._id} value={m._id}>
-                      📄 {m.fileName}
-                    </option>
-                  ))}
+                  {materials
+                    .filter(m => !selectedLessonId || String(m.lessonId) === String(selectedLessonId))
+                    .map(m => (
+                      <option key={m._id} value={m._id}>
+                        📄 {m.fileName}
+                      </option>
+                    ))}
                 </select>
               </div>
 

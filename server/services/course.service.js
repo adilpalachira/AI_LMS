@@ -2,6 +2,7 @@ const Course = require('../models/course.model');
 const Enrollment = require('../models/enrollment.model');
 const User = require('../models/user.model');
 const Category = require('../models/category.model');
+const notificationService = require('./notification.service');
 
 /**
  * Query courses with search, filters, pagination, and sorting
@@ -317,6 +318,32 @@ const enrollStudent = async (courseId, studentId) => {
   // Increment course enrolledCount
   course.enrolledCount += 1;
   await course.save();
+
+  // Notify student of enrollment
+  notificationService.createNotification({
+    recipient: studentId,
+    type: 'COURSE_ENROLLED',
+    title: 'Course Enrollment Successful',
+    message: `You have successfully enrolled in "${course.title}". Begin your learning journey now!`,
+    priority: 'Normal',
+    relatedEntity: course._id,
+    relatedEntityType: 'Course',
+    actionUrl: `/courses/${course._id}`
+  }).catch(err => console.error('[Notification] Error triggering enrollment notification:', err.message));
+
+  // Notify instructor
+  if (course.instructor) {
+    notificationService.createNotification({
+      recipient: course.instructor,
+      type: 'COURSE_ENROLLED',
+      title: 'New Student Enrolled',
+      message: `A new student has enrolled in your course "${course.title}".`,
+      priority: 'Normal',
+      relatedEntity: course._id,
+      relatedEntityType: 'Course',
+      actionUrl: `/courses/${course._id}/manage-content`
+    }).catch(err => console.error('[Notification] Error triggering instructor enrollment notification:', err.message));
+  }
 
   return enrollment;
 };

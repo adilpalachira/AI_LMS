@@ -4,15 +4,37 @@ import VideoPlayer from './VideoPlayer';
 import DocumentCard from './DocumentCard';
 import { FileText, Link as LinkIcon, FileCode } from 'lucide-react';
 
-const FilePreview = ({ lesson, materials = [] }) => {
+const FilePreview = ({ lesson, materials = [], targetPage, startTime, focusTopic, targetMaterialId }) => {
   if (!lesson) return null;
 
   const { contentType, textNote, externalUrl } = lesson;
 
+  // Highlight helper for Text Notes
+  const renderHighlightedNote = (text, topic) => {
+    if (!text) return 'No note text provided for this lesson.';
+    if (!topic || !topic.trim()) return text;
+
+    const topicWords = topic.trim().split(/\s+/).filter(w => w.length > 2);
+    if (topicWords.length === 0) return text;
+
+    const regex = new RegExp(`(${topicWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+    const parts = text.split(regex);
+
+    return parts.map((part, i) =>
+      regex.test(part) ? (
+        <mark key={i} className="bg-amber-200 text-amber-950 font-semibold px-1 py-0.5 rounded-sm">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    );
+  };
+
   // Render YouTube or External URL
   if (contentType === 'YouTube' || contentType === 'External URL') {
     if (contentType === 'YouTube' && externalUrl) {
-      return <VideoPlayer url={externalUrl} title={lesson.title} />;
+      return <VideoPlayer url={externalUrl} title={lesson.title} startTime={startTime} focusTopic={focusTopic} />;
     }
     return (
       <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-xs">
@@ -43,34 +65,51 @@ const FilePreview = ({ lesson, materials = [] }) => {
     );
   }
 
-  // Render Text Note
+  // Render Text Note with topic highlight
   if (contentType === 'Text Note') {
     return (
       <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 space-y-4 shadow-xs">
-        <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-          <FileText size={16} className="text-blue-600" />
-          Lesson Note
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <FileText size={16} className="text-blue-600" />
+            Lesson Note
+          </div>
+          {focusTopic && (
+            <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+              Focus: {focusTopic}
+            </span>
+          )}
         </div>
         <div className="prose prose-slate max-w-none text-sm text-gray-700 leading-relaxed whitespace-pre-line font-normal bg-gray-50/50 p-6 rounded-xl border border-gray-150">
-          {textNote || 'No note text provided for this lesson.'}
+          {renderHighlightedNote(textNote, focusTopic)}
         </div>
       </div>
     );
   }
 
+  // Priority material selection if targetMaterialId provided
+  const targetMat = targetMaterialId ? materials.find(m => m._id === targetMaterialId) : null;
+
   // Render Video content
-  if (contentType === 'Video') {
-    const videoMat = materials.find(m => m.fileType === 'video' || m.mimeType?.includes('video'));
+  if (contentType === 'Video' || (targetMat && (targetMat.fileType === 'video' || targetMat.mimeType?.includes('video')))) {
+    const videoMat = targetMat || materials.find(m => m.fileType === 'video' || m.mimeType?.includes('video'));
     if (videoMat) {
-      return <VideoPlayer url={videoMat.fileUrl} title={lesson.title} />;
+      return <VideoPlayer url={videoMat.fileUrl} title={lesson.title} startTime={startTime} focusTopic={focusTopic} />;
     }
   }
 
   // Render PDF content
-  if (contentType === 'PDF') {
-    const pdfMat = materials.find(m => m.fileType === 'pdf' || m.mimeType?.includes('pdf'));
+  if (contentType === 'PDF' || (targetMat && (targetMat.fileType === 'pdf' || targetMat.mimeType?.includes('pdf') || targetMat.fileName?.toLowerCase().endsWith('.pdf')))) {
+    const pdfMat = targetMat || materials.find(m => m.fileType === 'pdf' || m.mimeType?.includes('pdf') || m.fileName?.toLowerCase().endsWith('.pdf'));
     if (pdfMat) {
-      return <PdfViewer url={pdfMat.fileUrl} fileName={pdfMat.fileName} />;
+      return (
+        <PdfViewer
+          url={pdfMat.fileUrl}
+          fileName={pdfMat.fileName}
+          targetPage={targetPage}
+          focusTopic={focusTopic}
+        />
+      );
     }
   }
 

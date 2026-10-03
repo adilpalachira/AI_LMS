@@ -16,7 +16,11 @@ const AssignmentCard = ({ assignment, userRole, canManage = false, onEdit, onDel
             <h4 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
               {title}
             </h4>
-            <DeadlineBadge deadline={deadline} />
+            <DeadlineBadge
+              deadline={deadline}
+              isSubmitted={!!mySubmission}
+              submissionStatus={mySubmission?.status}
+            />
           </div>
           {description && (
             <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{description}</p>

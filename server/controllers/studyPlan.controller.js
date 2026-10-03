@@ -1,6 +1,7 @@
 const StudyPlan = require('../models/studyPlan.model');
 const StudyPlanTask = require('../models/studyPlanTask.model');
 const studyPlannerService = require('../services/studyPlanner.service');
+const topicResolverService = require('../services/topicResolver.service');
 const { formatResponse } = require('../utils/response');
 
 /**
@@ -70,7 +71,7 @@ const getStudyPlanById = async (req, res, next) => {
       return res.status(404).json(formatResponse(false, 'Study plan not found'));
     }
 
-    if (plan.studentId.toString() !== studentId) {
+    if (plan.studentId.toString() !== studentId && !['Admin', 'Faculty'].includes(req.user.role)) {
       return res.status(403).json(formatResponse(false, 'Unauthorized access to study plan'));
     }
 
@@ -97,7 +98,7 @@ const deleteStudyPlan = async (req, res, next) => {
       return res.status(404).json(formatResponse(false, 'Study plan not found'));
     }
 
-    if (plan.studentId.toString() !== studentId) {
+    if (plan.studentId.toString() !== studentId && !['Admin', 'Faculty'].includes(req.user.role)) {
       return res.status(403).json(formatResponse(false, 'Unauthorized action'));
     }
 
@@ -182,6 +183,83 @@ const skipTask = async (req, res, next) => {
   }
 };
 
+/**
+ * POST /api/study-plans/complete-lesson
+ * Complete a lesson and auto-complete any matching study planner tasks
+ */
+const completeLessonTask = async (req, res, next) => {
+  try {
+    const studentId = req.user._id.toString();
+    const { courseId, lessonId } = req.body;
+    if (!courseId || !lessonId) {
+      return res.status(400).json(formatResponse(false, 'courseId and lessonId are required'));
+    }
+
+    const result = await studyPlannerService.completeLessonStudyTasks({
+      studentId,
+      courseId,
+      lessonId
+    });
+
+    return res.status(200).json(
+      formatResponse(true, 'Lesson and linked study tasks marked as completed', result)
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/study-plans/tasks/:id/resolve-content
+ * Deep-link resolution for a specific study task
+ */
+const resolveTaskContent = async (req, res, next) => {
+  try {
+    const studentId = req.user._id.toString();
+    const userRole = req.user.role || 'Student';
+    const taskId = req.params.id;
+
+    const result = await topicResolverService.resolveTaskLocation(taskId, studentId, userRole);
+
+    return res.status(200).json(
+      formatResponse(true, 'Study task content location resolved', result)
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/study-plans/resolve-topic
+ * Deep-link resolution for a raw topic inside a course
+ */
+const resolveTopicContent = async (req, res, next) => {
+  try {
+    const studentId = req.user._id.toString();
+    const userRole = req.user.role || 'Student';
+    const { courseId, topic, title, resourceType } = req.body;
+
+    if (!courseId) {
+      return res.status(400).json(formatResponse(false, 'courseId is required'));
+    }
+
+    const result = await topicResolverService.resolveTopicToContent({
+      courseId,
+      topic,
+      title,
+      resourceType,
+      studentId,
+      userRole
+    });
+
+    return res.status(200).json(
+      formatResponse(true, 'Topic content location resolved', result)
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createStudyPlan,
   getStudyPlans,
@@ -190,5 +268,8 @@ module.exports = {
   completeTask,
   updateTaskStatus,
   rescheduleTask,
-  skipTask
+  skipTask,
+  completeLessonTask,
+  resolveTaskContent,
+  resolveTopicContent
 };

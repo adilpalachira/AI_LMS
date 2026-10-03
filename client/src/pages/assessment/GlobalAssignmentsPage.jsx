@@ -44,13 +44,16 @@ const GlobalAssignmentsPage = () => {
 
     if (filter === 'All') return true;
     if (filter === 'Pending') {
-      return !assign.mySubmission || assign.mySubmission.status === 'Submitted';
+      return !assign.mySubmission;
+    }
+    if (filter === 'Submitted') {
+      return !!assign.mySubmission;
     }
     if (filter === 'Graded') {
       return assign.mySubmission?.status === 'Graded';
     }
     if (filter === 'Overdue') {
-      return new Date(assign.deadline) < new Date() && (!assign.mySubmission || assign.mySubmission.status !== 'Graded');
+      return !assign.mySubmission && new Date(assign.deadline) < new Date();
     }
     return true;
   });
@@ -97,7 +100,7 @@ const GlobalAssignmentsPage = () => {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           {/* Filter Tabs */}
           <div className="flex items-center gap-1.5 bg-gray-100/80 p-1.5 rounded-2xl border border-gray-200/80 overflow-x-auto shrink-0">
-            {['All', 'Pending', 'Graded', 'Overdue'].map((tab) => (
+            {['All', 'Pending', 'Submitted', 'Graded', 'Overdue'].map((tab) => (
               <button
                 key={tab}
                 type="button"

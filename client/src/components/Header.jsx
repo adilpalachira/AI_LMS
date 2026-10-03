@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, Bell, MessageSquare, ChevronDown, LogOut, User as UserIcon } from 'lucide-react';
+import { Search, Bell, MessageSquare, ChevronDown, LogOut, User as UserIcon, Settings as SettingsIcon } from 'lucide-react';
+
+import NotificationDropdown from './notifications/NotificationDropdown';
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -43,11 +45,8 @@ const Header = () => {
           <span className="absolute top-1 right-1.5 h-2 w-2 rounded-full bg-blue-600 border border-white"></span>
         </button>
 
-        {/* Notifications */}
-        <button className="text-gray-500 hover:text-gray-900 p-2 rounded-xl hover:bg-gray-50 transition-all relative">
-          <Bell size={17} strokeWidth={2} />
-          <span className="absolute top-1.5 right-2 h-1.5 w-1.5 rounded-full bg-red-500 border border-white"></span>
-        </button>
+        {/* Notifications Dropdown */}
+        <NotificationDropdown />
 
         <div className="h-5 w-[1px] bg-gray-200"></div>
 
@@ -79,12 +78,12 @@ const Header = () => {
           {dropdownOpen && (
             <div className="absolute right-0 mt-2.5 w-48 bg-white border border-gray-200/80 rounded-2xl p-1.5 shadow-lg shadow-gray-200/50 z-50 animate-fadeIn">
               <Link
-                to="/profile"
+                to="/settings"
                 onClick={() => setDropdownOpen(false)}
                 className="flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-xl px-3 py-2 text-xs font-medium transition-all"
               >
-                <UserIcon size={14} />
-                My Profile
+                <SettingsIcon size={14} />
+                Settings
               </Link>
               <button
                 onClick={handleLogout}

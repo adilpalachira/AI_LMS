@@ -57,6 +57,4 @@ const LearningProfileSchema = new mongoose.Schema(
   }
 );
 
-LearningProfileSchema.index({ studentId: 1 });
-
 module.exports = mongoose.model('LearningProfile', LearningProfileSchema);

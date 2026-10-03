@@ -1,6 +1,7 @@
 const Assignment = require('../models/assignment.model');
 const Submission = require('../models/submission.model');
 const Course = require('../models/course.model');
+const notificationService = require('./notification.service');
 const fs = require('fs');
 const path = require('path');
 
@@ -25,10 +26,25 @@ const checkCourseOwnership = async (courseId, user) => {
  * Create a new assignment
  */
 const createAssignment = async (assignmentData, user) => {
-  await checkCourseOwnership(assignmentData.courseId, user);
+  const course = await checkCourseOwnership(assignmentData.courseId, user);
   assignmentData.createdBy = user._id;
 
   const assignment = await Assignment.create(assignmentData);
+
+  // Notify enrolled students if published
+  if (assignment.status === 'Published') {
+    notificationService.notifyEnrolledStudents(assignment.courseId, {
+      senderId: user._id,
+      type: 'ASSIGNMENT_CREATED',
+      title: 'New Assignment Available',
+      message: `A new assignment "${assignment.title}" has been published in ${course?.title || 'your course'}.`,
+      relatedEntity: assignment._id,
+      relatedEntityType: 'Assignment',
+      actionUrl: '/assignments',
+      eventId: `ASSIGNMENT_CREATED_${assignment._id}`
+    }).catch(err => console.error('[Notification] Error triggering assignment notification:', err.message));
+  }
+
   return assignment;
 };
 

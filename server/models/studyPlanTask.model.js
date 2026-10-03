@@ -32,9 +32,33 @@ const StudyPlanTaskSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       default: null
     },
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Course',
+      default: null
+    },
+    sectionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'CourseSection',
+      default: null
+    },
+    lessonId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Lesson',
+      default: null
+    },
+    materialId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'LearningMaterial',
+      default: null
+    },
+    targetLocation: {
+      type: Object,
+      default: {}
+    },
     resourceType: {
       type: String,
-      enum: ['Lesson', 'Quiz', 'Assignment', 'Revision', 'AI Tutor', 'General'],
+      enum: ['Lesson', 'Quiz', 'Assignment', 'Revision', 'AI Tutor', 'General', 'PDF', 'Video', 'Text Note'],
       default: 'General'
     },
     durationMinutes: {

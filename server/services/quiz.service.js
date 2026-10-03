@@ -1,16 +1,32 @@
 const Quiz = require('../models/quiz.model');
 const Question = require('../models/question.model');
 const QuizAttempt = require('../models/quizAttempt.model');
+const Course = require('../models/course.model');
+const notificationService = require('./notification.service');
 const { checkCourseOwnership } = require('./assignment.service');
 
 /**
  * Create a new Quiz
  */
 const createQuiz = async (quizData, user) => {
-  await checkCourseOwnership(quizData.courseId, user);
+  const course = await checkCourseOwnership(quizData.courseId, user);
   quizData.createdBy = user._id;
 
   const quiz = await Quiz.create(quizData);
+
+  if (quiz.status === 'Published') {
+    notificationService.notifyEnrolledStudents(quiz.courseId, {
+      senderId: user._id,
+      type: 'QUIZ_AVAILABLE',
+      title: 'New Quiz Available',
+      message: `A new quiz "${quiz.title}" is now available in ${course?.title || 'your course'}.`,
+      relatedEntity: quiz._id,
+      relatedEntityType: 'Quiz',
+      actionUrl: `/courses/${quiz.courseId}/student-quizzes`,
+      eventId: `QUIZ_CREATED_${quiz._id}`
+    }).catch(err => console.error('[Notification] Error triggering quiz notification:', err.message));
+  }
+
   return quiz;
 };
 
@@ -177,6 +193,18 @@ const submitQuizAttempt = async (quizId, studentAnswers, user) => {
     status: 'Completed',
     submittedAt: new Date()
   });
+
+  // Notify student of quiz result
+  notificationService.createNotification({
+    recipient: user._id,
+    type: 'QUIZ_RESULT',
+    title: 'Quiz Completed',
+    message: `You scored ${percentage}% (${score}/${maxScore}) on "${quiz.title}". Status: ${passed ? 'Passed' : 'Needs Review'}.`,
+    priority: passed ? 'Normal' : 'Important',
+    relatedEntity: attempt._id,
+    relatedEntityType: 'QuizAttempt',
+    actionUrl: `/courses/${quiz.courseId}/student-quizzes`
+  }).catch(err => console.error('[Notification] Error triggering quiz attempt notification:', err.message));
 
   return attempt;
 };

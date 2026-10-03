@@ -25,15 +25,20 @@ import {
   Server,
   TrendingUp,
   Plus,
-  Settings
+  Settings,
+  ShieldAlert,
+  LineChart,
+  AlertTriangle
 } from 'lucide-react';
+import analyticsService from '../services/analyticsService';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [analyticsSummary, setAnalyticsSummary] = useState(null);
 
   useEffect(() => {
     fetchDashboardSummary();
@@ -42,9 +47,16 @@ const Dashboard = () => {
   const fetchDashboardSummary = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/users/dashboard-summary');
-      if (response.data?.success) {
-        setSummary(response.data.data);
+      const [response, analyticsRes] = await Promise.allSettled([
+        api.get('/users/dashboard-summary'),
+        analyticsService.getDashboardAnalytics()
+      ]);
+
+      if (response.status === 'fulfilled' && response.value.data?.success) {
+        setSummary(response.value.data.data);
+      }
+      if (analyticsRes.status === 'fulfilled' && analyticsRes.value?.success) {
+        setAnalyticsSummary(analyticsRes.value.data);
       }
     } catch (err) {
       console.error('Failed to fetch dashboard summary:', err);
@@ -108,6 +120,47 @@ const Dashboard = () => {
               </svg>
             </div>
           </section>
+
+          {/* MODULE 9 AI PERFORMANCE & AT-RISK BANNER */}
+          {analyticsSummary && (
+            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-[20px] p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-700">
+              <div className="space-y-1.5 max-w-xl">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[11px] font-bold border border-blue-400/20">
+                  <BrainCircuit size={13} />
+                  <span>Module 9 — AI Predictive Analytics Active</span>
+                </div>
+                <h3 className="text-xl font-bold tracking-tight text-white">
+                  {user?.role === 'Student'
+                    ? `Estimated Grade Performance: ${analyticsSummary.avgPredictedScore}%`
+                    : `At-Risk Monitoring Alert (${analyticsSummary.highRiskCount || 0} High Risk)`}
+                </h3>
+                <p className="text-xs text-gray-300 font-medium leading-relaxed">
+                  {user?.role === 'Student'
+                    ? `Across ${analyticsSummary.enrolledCoursesCount} active courses. Open analytics for feature breakdowns.`
+                    : `Evaluated across enrolled student cohorts using ML feature regression.`}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  onClick={() => navigate('/analytics')}
+                  className="bg-white hover:bg-gray-100 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all shadow-sm"
+                >
+                  <LineChart size={15} />
+                  View Analytics
+                </button>
+                {['Admin', 'Faculty'].includes(user?.role) && (
+                  <button
+                    onClick={() => navigate('/at-risk-students')}
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all shadow-sm"
+                  >
+                    <ShieldAlert size={15} />
+                    Inspect At-Risk ({analyticsSummary.totalAtRiskStudents || 0})
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           {loading ? (
             <div className="flex items-center justify-center py-16">

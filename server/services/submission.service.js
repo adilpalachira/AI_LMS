@@ -1,5 +1,7 @@
 const Submission = require('../models/submission.model');
 const Assignment = require('../models/assignment.model');
+const Course = require('../models/course.model');
+const notificationService = require('./notification.service');
 const { checkCourseOwnership } = require('./assignment.service');
 const fs = require('fs');
 const path = require('path');
@@ -8,7 +10,7 @@ const path = require('path');
  * Submit or update assignment submission (Student)
  */
 const submitAssignment = async (assignmentId, fileInfo, user) => {
-  const assignment = await Assignment.findById(assignmentId);
+  const assignment = await Assignment.findById(assignmentId).populate('courseId', 'title instructor');
   if (!assignment) {
     throw new Error('Assignment not found');
   }
@@ -45,7 +47,7 @@ const submitAssignment = async (assignmentId, fileInfo, user) => {
   } else {
     submission = await Submission.create({
       assignmentId: assignment._id,
-      courseId: assignment.courseId,
+      courseId: assignment.courseId?._id || assignment.courseId,
       studentId: user._id,
       fileUrl: fileInfo.relativePath || fileInfo.fileUrl,
       fileName: fileInfo.originalname || fileInfo.fileName || 'Submission File',
@@ -54,6 +56,20 @@ const submitAssignment = async (assignmentId, fileInfo, user) => {
       isLate,
       status: 'Submitted'
     });
+  }
+
+  // Notify Course Instructor
+  if (assignment.courseId?.instructor) {
+    notificationService.createNotification({
+      recipient: assignment.courseId.instructor,
+      sender: user._id,
+      type: 'ASSIGNMENT_SUBMITTED',
+      title: 'Assignment Submitted',
+      message: `${user.name || 'A student'} submitted assignment "${assignment.title}" in ${assignment.courseId?.title || 'course'}.`,
+      relatedEntity: submission._id,
+      relatedEntityType: 'Submission',
+      actionUrl: `/assignments/${assignment._id}/review`
+    }).catch(err => console.error('[Notification] Error triggering submission notification:', err.message));
   }
 
   return submission;
@@ -106,6 +122,20 @@ const gradeSubmission = async (submissionId, gradeData, user) => {
   submission.gradedAt = new Date();
 
   await submission.save();
+
+  // Notify student of graded assignment
+  notificationService.createNotification({
+    recipient: submission.studentId,
+    sender: user._id,
+    type: 'ASSIGNMENT_GRADED',
+    title: 'Assignment Graded',
+    message: `Your submission for "${assignment.title}" has been graded. Marks: ${submission.marks}/${assignment.maxMarks}.`,
+    priority: 'Normal',
+    relatedEntity: submission._id,
+    relatedEntityType: 'Submission',
+    actionUrl: '/assignments'
+  }).catch(err => console.error('[Notification] Error triggering grade notification:', err.message));
+
   return submission;
 };
 

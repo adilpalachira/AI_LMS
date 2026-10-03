@@ -23,6 +23,12 @@ const EnrollmentSchema = new mongoose.Schema(
       max: 100,
       default: 0
     },
+    completedLessons: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Lesson'
+      }
+    ],
     enrollmentDate: {
       type: Date,
       default: Date.now

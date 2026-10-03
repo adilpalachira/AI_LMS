@@ -1,4 +1,4 @@
-﻿# Dependencies
+# Dependencies
 node_modules/
 **/node_modules/
 node_modules_temp/
@@ -17,10 +17,11 @@ dist/
 **/dist/
 build/
 
-# Logs
+# Logs & Scratch
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+server/scratch/
 
 # OS / Editor files
 .DS_Store

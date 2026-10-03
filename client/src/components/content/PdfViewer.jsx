@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { FileText, Download, ExternalLink, Maximize2, Minimize2 } from 'lucide-react';
+import { FileText, Download, ExternalLink, Maximize2, Minimize2, Bookmark, Sparkles } from 'lucide-react';
 
-const PdfViewer = ({ url, fileName }) => {
+const PdfViewer = ({ url, fileName, targetPage, page, focusTopic }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   if (!url) {
@@ -12,7 +12,11 @@ const PdfViewer = ({ url, fileName }) => {
     );
   }
 
+  const activePage = targetPage || page;
   const fullUrl = url.startsWith('http') ? url : `http://localhost:5000/${url.replace(/^\/+/, '')}`;
+  const iframeSrc = activePage
+    ? `${fullUrl}#page=${activePage}&toolbar=1&navpanes=0`
+    : `${fullUrl}#toolbar=1&navpanes=0`;
 
   return (
     <div
@@ -21,7 +25,7 @@ const PdfViewer = ({ url, fileName }) => {
       }`}
     >
       {/* Header bar */}
-      <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between gap-3 shrink-0">
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between gap-3 shrink-0 flex-wrap">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-1.5 bg-red-50 text-red-600 rounded-lg border border-red-100 shrink-0">
             <FileText size={18} />
@@ -29,6 +33,20 @@ const PdfViewer = ({ url, fileName }) => {
           <span className="text-xs font-bold text-gray-900 truncate max-w-sm">
             {fileName || 'PDF Document'}
           </span>
+
+          {activePage && (
+            <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200/80 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+              <Bookmark size={11} className="text-amber-600" />
+              Page {activePage}
+            </span>
+          )}
+
+          {focusTopic && (
+            <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200/80 px-2 py-0.5 rounded-full text-[10px] font-semibold hidden md:inline-flex">
+              <Sparkles size={10} className="text-blue-600" />
+              {focusTopic}
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -65,7 +83,7 @@ const PdfViewer = ({ url, fileName }) => {
       {/* PDF View Container */}
       <div className="flex-1 bg-slate-100 relative">
         <iframe
-          src={`${fullUrl}#toolbar=1&navpanes=0`}
+          src={iframeSrc}
           title={fileName || 'PDF Viewer'}
           className="w-full h-full border-0"
         />

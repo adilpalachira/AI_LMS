@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const pdfParse = require('pdf-parse');
+const { PDFParse } = require('pdf-parse');
 
 /**
  * Text Extractor Service
@@ -38,31 +38,21 @@ const extractFromPdf = async (filePath) => {
 
   const dataBuffer = fs.readFileSync(absolutePath);
 
-  const pages = [];
-  const renderPage = (pageData) => {
-    return pageData.getTextContent().then((textContent) => {
-      let pageText = '';
-      for (const item of textContent.items) {
-        pageText += item.str + ' ';
-      }
-      const cleaned = cleanText(pageText);
-      if (cleaned) {
-        pages.push({
-          pageNumber: pageData.pageIndex + 1,
-          text: cleaned
-        });
-      }
-      return pageText;
-    });
-  };
-
-  const parsed = await pdfParse(dataBuffer, { pagerender: renderPage });
+  const parser = new PDFParse({ data: dataBuffer });
+  const parsed = await parser.getText();
+  
   const fullText = cleanText(parsed.text);
+  
+  // Format the pages array to match expected shape: { pageNumber: number, text: string }
+  const formattedPages = (parsed.pages || []).map(p => ({
+    pageNumber: p.num,
+    text: cleanText(p.text)
+  }));
 
   return {
     text: fullText,
-    pageCount: parsed.numpages || 1,
-    pages: pages.length > 0 ? pages : [{ pageNumber: 1, text: fullText }]
+    pageCount: parsed.total || 1,
+    pages: formattedPages.length > 0 ? formattedPages : [{ pageNumber: 1, text: fullText }]
   };
 };
 

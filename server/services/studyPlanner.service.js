@@ -9,6 +9,7 @@ const QuizAttempt = require('../models/quizAttempt.model');
 const Submission = require('../models/submission.model');
 const { generateCompletion } = require('./ai/openai.service');
 const { getOrCreateProfile } = require('./personalization.service');
+const topicResolver = require('./topicResolver.service');
 
 /**
  * Recalculate and update the progress percentage for a study plan
@@ -287,24 +288,69 @@ Course Content:
   const validResourceTypes = ['Lesson', 'Quiz', 'Assignment', 'Revision', 'AI Tutor', 'General'];
   const validPriorities = ['High', 'Medium', 'Low'];
 
-  const taskDocs = (parsedPlan.tasks || []).map((t, idx) => {
+  const taskDocs = await Promise.all((parsedPlan.tasks || []).map(async (t, idx) => {
     const taskOffset = typeof t.dayOffset === 'number' ? Math.max(0, Math.min(totalDays - 1, t.dayOffset)) : (idx % totalDays);
     const taskDate = new Date(start);
     taskDate.setDate(start.getDate() + taskOffset);
 
+    // Auto-resolve deep-linked learning content (PDF page, Video, Lesson)
+    let resType = validResourceTypes.includes(t.resourceType) ? t.resourceType : 'General';
+    let resolvedInfo = null;
+
+    try {
+      resolvedInfo = await topicResolver.resolveTopicToContent({
+        courseId,
+        topic: t.topic || t.title,
+        title: t.title,
+        resourceType: resType,
+        studentId,
+        userRole: 'Student'
+      });
+    } catch (resolveErr) {
+      // Non-blocking resolution error
+    }
+
+    let matchedResourceId = null;
+    let targetLocation = {};
+
+    if (resolvedInfo && resolvedInfo.found) {
+      if (resolvedInfo.type === 'PDF') resType = 'PDF';
+      else if (resolvedInfo.type === 'Video' || resolvedInfo.type === 'YouTube') resType = 'Video';
+      else if (resolvedInfo.type === 'Quiz') resType = 'Quiz';
+      else if (resolvedInfo.type === 'Assignment') resType = 'Assignment';
+      else if (resolvedInfo.type === 'Text Note') resType = 'Text Note';
+      else resType = 'Lesson';
+
+      matchedResourceId = resolvedInfo.lessonId || resolvedInfo.quizId || resolvedInfo.assignmentId || null;
+      targetLocation = {
+        contentType: resolvedInfo.type,
+        page: resolvedInfo.page || null,
+        startTime: resolvedInfo.startTime || null,
+        sourceTitle: resolvedInfo.sourceTitle || '',
+        directUrl: resolvedInfo.directUrl || '',
+        textSnippet: resolvedInfo.textSnippet || ''
+      };
+    }
+
     return {
       studyPlanId: studyPlan._id,
+      courseId,
+      sectionId: resolvedInfo?.sectionId || null,
+      lessonId: resolvedInfo?.lessonId || null,
+      materialId: resolvedInfo?.materialId || null,
+      targetLocation,
       date: taskDate,
       title: t.title || `Study Task ${idx + 1}`,
       description: t.description || `Study session for ${course.code}`,
       topic: t.topic || 'General',
-      resourceType: validResourceTypes.includes(t.resourceType) ? t.resourceType : 'General',
+      resourceId: matchedResourceId,
+      resourceType: resType,
       durationMinutes: typeof t.durationMinutes === 'number' && t.durationMinutes > 0 ? t.durationMinutes : 45,
       priority: validPriorities.includes(t.priority) ? t.priority : 'Medium',
       status: 'Pending',
       order: idx
     };
-  });
+  }));
 
   if (taskDocs.length > 0) {
     await StudyPlanTask.insertMany(taskDocs);
@@ -316,6 +362,110 @@ Course Content:
   return {
     studyPlan,
     tasks: taskDocs
+  };
+};
+
+/**
+ * Complete study tasks for a lesson and update enrollment progress
+ */
+const completeLessonStudyTasks = async ({ studentId, courseId, lessonId }) => {
+  const lesson = await Lesson.findById(lessonId);
+  if (!lesson) {
+    throw new Error('Lesson not found');
+  }
+
+  // 1. Update Enrollment completedLessons and progress
+  let enrollment = await Enrollment.findOne({ student: studentId, course: courseId });
+  if (enrollment) {
+    if (!enrollment.completedLessons) {
+      enrollment.completedLessons = [];
+    }
+    const alreadyCompleted = enrollment.completedLessons.some(id => id.toString() === lessonId.toString());
+    if (!alreadyCompleted) {
+      enrollment.completedLessons.push(lesson._id);
+    }
+
+    // Calculate total lessons in course
+    const totalLessonsCount = await Lesson.countDocuments({ courseId });
+    if (totalLessonsCount > 0) {
+      enrollment.progress = Math.min(100, Math.round((enrollment.completedLessons.length / totalLessonsCount) * 100));
+      if (enrollment.progress === 100) {
+        enrollment.status = 'Completed';
+      }
+    }
+    await enrollment.save();
+  }
+
+  // 2. Find Study Plans for this student and course (both 'Active' and all student plans)
+  const plans = await StudyPlan.find({
+    studentId,
+    $or: [
+      { courseId: courseId },
+      { status: 'Active' }
+    ]
+  });
+
+  let updatedTaskCount = 0;
+  let lastUpdatedPlan = null;
+
+  const lTitleLower = (lesson.title || '').toLowerCase().trim();
+  const lWords = lTitleLower.split(/\s+/).filter(w => w.length > 2);
+
+  for (const plan of plans) {
+    // Find all pending/in-progress tasks for this plan
+    const pendingTasks = await StudyPlanTask.find({
+      studyPlanId: plan._id,
+      status: { $in: ['Pending', 'In-Progress', 'Rescheduled'] }
+    });
+
+    let planHasMatches = false;
+
+    for (const task of pendingTasks) {
+      // 1. Direct ID matches
+      const isLessonIdMatch = task.lessonId && task.lessonId.toString() === lessonId.toString();
+      const isResourceIdMatch = task.resourceId && task.resourceId.toString() === lessonId.toString();
+      const isTargetLocLessonMatch = task.targetLocation?.lessonId && task.targetLocation.lessonId.toString() === lessonId.toString();
+
+      // 2. Topic and Title matches
+      const tTitleLower = (task.title || '').toLowerCase().trim();
+      const tTopicLower = (task.topic || '').toLowerCase().trim();
+
+      const isTitleExact = tTitleLower.includes(lTitleLower) || lTitleLower.includes(tTitleLower);
+      const isTopicExact = tTopicLower && (tTopicLower.includes(lTitleLower) || lTitleLower.includes(tTopicLower));
+
+      // Word token overlap match (e.g. "Introduction" matches "Study Lesson: Introduction")
+      const wordOverlap = lWords.some(word => tTitleLower.includes(word) || tTopicLower.includes(word));
+
+      if (isLessonIdMatch || isResourceIdMatch || isTargetLocLessonMatch || isTitleExact || isTopicExact || wordOverlap) {
+        task.status = 'Completed';
+        task.completedAt = new Date();
+        if (!task.lessonId) task.lessonId = lesson._id;
+        await task.save();
+        updatedTaskCount++;
+        planHasMatches = true;
+      }
+    }
+
+    // If no direct keyword or ID matched but this is a course lesson task, complete the next pending lesson task in the plan
+    if (!planHasMatches && pendingTasks.length > 0) {
+      const nextPendingLessonTask = pendingTasks.find(t => t.resourceType === 'Lesson' || t.resourceType === 'General');
+      if (nextPendingLessonTask) {
+        nextPendingLessonTask.status = 'Completed';
+        nextPendingLessonTask.completedAt = new Date();
+        nextPendingLessonTask.lessonId = lesson._id;
+        await nextPendingLessonTask.save();
+        updatedTaskCount++;
+      }
+    }
+
+    lastUpdatedPlan = await recalculatePlanProgress(plan._id);
+  }
+
+  return {
+    enrollment,
+    lesson,
+    updatedTaskCount,
+    plan: lastUpdatedPlan
   };
 };
 
@@ -384,5 +534,6 @@ module.exports = {
   generateStudyPlan,
   rescheduleTask,
   updateTaskStatus,
-  recalculatePlanProgress
+  recalculatePlanProgress,
+  completeLessonStudyTasks
 };
